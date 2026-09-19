@@ -1,0 +1,17 @@
+# Build output — GitHub Actions publishes this, it is never committed.
+_site/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Apps Script tooling, if anyone ever wires up clasp
+.clasp.json
+.clasprc.json
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini

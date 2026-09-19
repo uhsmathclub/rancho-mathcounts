@@ -1,0 +1,9 @@
+# Site-wide configuration.
+
+# The Google Apps Script web app deployment URL, used by /hello.
+# Deploy Code.gs as a web app with:
+#   Execute as:      Me
+#   Who has access:  Anyone
+# then paste the /exec URL here. Leave it blank and /hello will simply
+# report that check-in is unreachable.
+apps_script_url: "https://script.google.com/a/macros/iusd.org/s/AKfycbyXDPNzEKen0motfkX0zcbwvAEb-7uvE-f_yLgoQX-du_7jwkaDXBpnbZfQlrP_usXwuQ/exec"

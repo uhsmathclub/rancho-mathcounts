@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="checkin">
+
+  {# ---------- step 1: the gate ---------- #}
+  <form id="gate" novalidate>
+    <h1 id="gate-heading" tabindex="-1" data-zh="今日代码" data-ko="오늘의 코드">Today's Code</h1>
+
+    <fieldset>
+      <legend data-zh="今日代码" data-ko="오늘의 코드">Today's code</legend>
+      <div class="boxes" id="code-boxes">
+        {%- for n in [1, 2, 3, 4] %}
+        <input type="text" inputmode="text" autocapitalize="characters" autocomplete="off"
+          autocorrect="off" spellcheck="false" maxlength="1"
+          aria-label="Today's code, character {{ n }} of 4"
+          data-zh-aria-label="今日代码第 {{ n }} 位，共 4 位"
+          data-ko-aria-label="오늘의 코드 {{ n }}번째 자리 (총 4자리)">
+        {%- endfor %}
+      </div>
+    </fieldset>
+
+    <p class="error" id="gate-error" role="status" aria-live="polite"></p>
+
+    <button class="btn" type="submit" id="gate-submit" data-zh="继续" data-ko="계속">Continue</button>
+  </form>
+
+  {# ---------- step 2: check in ---------- #}
+  <form id="checkin" hidden novalidate>
+    <h1 id="checkin-heading" tabindex="-1" data-zh="签到" data-ko="체크인">Check In</h1>
+
+    <aside class="announce" id="day-announcement" hidden></aside>
+
+    <fieldset>
+      <legend data-zh="学号" data-ko="학번">Student ID</legend>
+      <div class="boxes boxes--id" id="id-boxes">
+        {%- for group in [0, 1, 2] %}
+        <span class="boxes__group">
+          {%- for offset in [1, 2, 3] %}
+          {%- set n = group * 3 + offset %}
+          <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+            autocorrect="off" spellcheck="false" maxlength="1"
+            aria-label="Student ID, digit {{ n }} of 9"
+            data-zh-aria-label="学号第 {{ n }} 位，共 9 位"
+            data-ko-aria-label="학번 {{ n }}번째 자리 (총 9자리)">
+          {%- endfor %}
+        </span>
+        {%- endfor %}
+      </div>
+
+      <p class="hint" id="saved-hint" hidden>
+        <span data-zh="你的学号已保存在此设备上。"
+          data-ko="학번이 이 기기에 저장되어 있습니다.">Your ID is saved on this device.</span>
+        <button type="button" id="erase" data-zh="不是你？清除学号。"
+          data-ko="본인이 아닌가요? 학번 지우기.">Not you? Erase ID.</button>
+      </p>
+    </fieldset>
+
+    <div class="field">
+      <label for="message" data-zh="给教练的留言（选填）"
+        data-ko="코치에게 전할 메시지 (선택)">Message to your coaches (optional)</label>
+      <textarea id="message" rows="3"></textarea>
+    </div>
+
+    <div class="leaving">
+      <input type="checkbox" id="leaving">
+      <label for="leaving" data-zh="需要提前离开吗？" data-ko="일찍 가나요?">Leaving early?</label>
+      <label for="leaving-time" class="visually-hidden" data-zh="几点？" data-ko="몇 시에요?">What time?</label>
+      <input type="time" id="leaving-time" hidden>
+    </div>
+
+    <p class="error" id="checkin-error" role="status" aria-live="polite"></p>
+
+    <button class="btn" type="submit" id="checkin-submit" data-zh="签到" data-ko="체크인">Check in</button>
+  </form>
+
+  {# ---------- step 3: result ---------- #}
+  <div id="result" hidden>
+    <h1 id="result-heading" tabindex="-1"
+      data-template-en="Welcome, {name}."
+      data-template-zh="{name}，欢迎回来。"
+      data-template-ko="{name} 님, 환영합니다."></h1>
+    <p data-zh="签到成功。" data-ko="체크인이 완료되었습니다.">You're checked in.</p>
+    <div class="result__line" id="result-line" hidden></div>
+    <div id="personal-message"></div>
+  </div>
+
+  {# ---------- message bank ----------
+     Every string the script can show lives here, with its translations as
+     data attributes. The script clones one of these into the error slot, so
+     the language switch keeps working on messages that are already on screen. #}
+  <div id="strings" hidden>
+    <span data-key="code-short" data-zh="请输入今日代码的全部四位字符。"
+      data-ko="오늘의 코드 네 자리를 모두 입력해 주세요.">Enter all four characters of today's code.</span>
+    <span data-key="code-wrong" data-zh="今日代码不正确。请查看白板或询问教练。"
+      data-ko="오늘의 코드가 아닙니다. 칠판을 확인하거나 코치에게 물어보세요.">That's not today's code. Check the board or ask a coach.</span>
+    <span data-key="id-short" data-zh="请输入完整的九位学号。"
+      data-ko="학번 아홉 자리를 모두 입력해 주세요.">Enter all nine digits of your student ID.</span>
+    <span data-key="id-unknown" data-zh="未找到该学号。"
+      data-ko="해당 학번을 찾을 수 없습니다.">We couldn't find that student ID.</span>
+    <span data-key="offline" data-zh="目前无法连接签到系统。请告知教练。"
+      data-ko="지금은 체크인에 연결할 수 없습니다. 코치에게 알려 주세요.">Check-in isn't reachable right now. Tell a coach.</span>
+    <span data-key="loading" data-zh="正在签到……"
+      data-ko="체크인 중…">Checking you in…</span>
+  </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>window.MC_ENDPOINT = {{ endpoint | tojson }};</script>
+<script src="/hello.js"></script>
+{% endblock %}

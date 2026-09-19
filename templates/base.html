@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+{% if description %}  <meta name="description" content="{{ description }}">
+{% endif %}{% if noindex %}  <meta name="robots" content="noindex, nofollow">
+{% endif %}  <meta name="theme-color" content="#fbf7ef" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#132749" media="(prefers-color-scheme: dark)">
+
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/mc_favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="/site.css">
+
+  <script>
+    /* Set the language before first paint so there is no flash. */
+    try {
+      var q = new URLSearchParams(location.search).get("lang");
+      var l = q || localStorage.getItem("mc-lang");
+      if (l && /^(en|zh|ko)$/.test(l)) {
+        document.documentElement.dataset.lang = l;
+        document.documentElement.lang = { en: "en", zh: "zh-Hans", ko: "ko" }[l];
+      }
+    } catch (e) {}
+  </script>
+</head>
+
+<body>
+  <a class="skip" href="#main" data-zh="跳至正文" data-ko="본문으로 건너뛰기">Skip to content</a>
+
+  <div class="wrap">
+    <nav class="nav">
+      <a class="nav__brand" href="/">
+        {{ logo }}
+        Rancho MATHCOUNTS
+      </a>
+
+      <span class="nav__links">
+        <a href="/tryouts/" data-zh="选拔" data-ko="선발"
+          {% if page == 'tryouts' %}aria-current="page"{% endif %}>Tryouts</a>
+        <a href="/resources/" data-zh="资源" data-ko="자료"
+          {% if page == 'resources' %}aria-current="page"{% endif %}>Resources</a>
+      </span>
+
+      <span class="nav__langs" role="group"
+        aria-label="Language" data-zh-aria-label="语言" data-ko-aria-label="언어">
+        <button type="button" data-set-lang="en" aria-pressed="true" lang="en">English</button>
+        <button type="button" data-set-lang="zh" aria-pressed="false" lang="zh-Hans">中文</button>
+        <button type="button" data-set-lang="ko" aria-pressed="false" lang="ko">한국어</button>
+      </span>
+    </nav>
+  </div>
+
+  <main id="main" class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+
+  <div class="wrap">
+    <footer class="footer">
+      <div class="i18n">
+        <p lang="en">Questions? Email Mrs. Gastelum at
+          <a href="mailto:LizGastelum@iusd.org">LizGastelum@iusd.org</a>, or stop by room B6.</p>
+        <p lang="zh-Hans">有问题吗？请发邮件至
+          <a href="mailto:LizGastelum@iusd.org">LizGastelum@iusd.org</a> 联系 Gastelum 老师，或前往 B6 教室。</p>
+        <p lang="ko">궁금한 점이 있으면 Gastelum 선생님께
+          <a href="mailto:LizGastelum@iusd.org">LizGastelum@iusd.org</a>로 메일을 보내거나 B6 교실로 찾아오세요.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/site.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+
+</html>

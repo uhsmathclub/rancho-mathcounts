@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  {{ i18n(home.main.subtext, 'p', 'hero__sub') }}
+  <h1>{{ home.main.head }}</h1>
+  <div class="hero__line" aria-hidden="true"></div>
+  {{ i18n(home.main.lede, 'p', 'hero__lede') }}
+</section>
+
+{%- if home.announce %}
+<aside class="announce">
+  {{ i18n(home.announce) }}
+</aside>
+{%- endif %}
+
+<figure>
+  {{ picture(home.main.picture, eager=true) }}
+</figure>
+
+<section class="stats">
+  {%- for stat in home.main.stats %}
+  <div>
+    <div class="stats__value">{{ stat.value }}</div>
+    {{ i18n(stat.label, 'div', 'stats__label') }}
+  </div>
+  {%- endfor %}
+</section>
+
+{%- for item in home.pictures %}
+<section class="essay">
+  <figure>
+    {{ picture(item) }}
+    <figcaption>{{ i18n(item.caption, 'span') }}</figcaption>
+  </figure>
+  {{ i18n(item.title, 'h2') }}
+  {{ i18n(item.date, 'p', 'essay__date') }}
+  {{ i18n(item.lede) }}
+</section>
+{%- endfor %}
+
+<section class="faq">
+  <h2 data-zh="常见问题" data-ko="자주 묻는 질문">Frequently Asked Questions</h2>
+  {%- for entry in home.faq %}
+  <details>
+    <summary>{{ i18n(entry.question, 'span') }}</summary>
+    {{ i18n(entry.answer) }}
+  </details>
+  {%- endfor %}
+</section>
+{% endblock %}

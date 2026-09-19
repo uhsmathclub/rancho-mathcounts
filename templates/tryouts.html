@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="prose">
+  {{ i18n(meta.title, 'h1') }}
+  {{ body }}
+</article>
+{% endblock %}

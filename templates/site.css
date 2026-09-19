@@ -1,0 +1,496 @@
+/* Rancho MATHCOUNTS — the whole stylesheet.
+   Single source of truth: build.py also wraps this file into Stylesheet.html
+   for the Google Apps Script fallback. Edit here, never there. */
+
+/* ---------- tokens ---------- */
+:root {
+  --paper: #fbf7ef;
+  --paper-deep: #f2ece0;
+  --ink: #132749;
+  --ink-muted: #5a6580;
+  --rule: #d9d2c4;
+  --rule-strong: #132749;
+  --gold: #fdb717;
+  --gold-wash: rgba(253, 183, 23, .22);
+  --focus: #132749;
+  --danger: #a3281e;
+  --success: #1f6b4a;
+
+  --font-display: Georgia, "Noto Serif", "Liberation Serif", "Times New Roman", serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+
+  --text-xs: .8125rem;
+  --text-sm: .9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.3125rem;
+  --text-xl: 1.6875rem;
+  --text-2xl: clamp(2rem, 4vw, 2.625rem);
+  --text-3xl: clamp(2.75rem, 8vw, 4.5rem);
+
+  --measure: 34rem;
+  --column: 46rem;
+  --gutter: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #132749;
+    --paper-deep: #1b3159;
+    --ink: #fbf7ef;
+    --ink-muted: #a8b2c6;
+    --rule: #2d4270;
+    --rule-strong: #fbf7ef;
+    --gold-wash: rgba(253, 183, 23, .20);
+    --focus: #fdb717;
+    --danger: #ff9d92;
+    --success: #7fd3a8;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #132749;
+  --paper-deep: #1b3159;
+  --ink: #fbf7ef;
+  --ink-muted: #a8b2c6;
+  --rule: #2d4270;
+  --rule-strong: #fbf7ef;
+  --gold-wash: rgba(253, 183, 23, .20);
+  --focus: #fdb717;
+  --danger: #ff9d92;
+  --success: #7fd3a8;
+}
+
+/* CJK stacks. Georgia has no CJK coverage, so the display role changes too. */
+:lang(zh) {
+  --font-display: "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+  --font-body: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+
+:lang(ko) {
+  --font-display: "Apple SD Gothic Neo", Pretendard, "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
+  --font-body: "Apple SD Gothic Neo", Pretendard, "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
+}
+
+:lang(zh) p, :lang(ko) p,
+:lang(zh) li, :lang(ko) li { line-height: 1.85; }
+
+:lang(zh) em, :lang(zh) i, :lang(zh) cite,
+:lang(ko) em, :lang(ko) i, :lang(ko) cite {
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* ---------- base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.65;
+  overflow-wrap: break-word;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+:lang(zh) h1, :lang(zh) h2, :lang(zh) h3,
+:lang(ko) h1, :lang(ko) h2, :lang(ko) h3 { letter-spacing: 0; }
+
+p { text-wrap: pretty; }
+
+img { max-width: 100%; height: auto; display: block; }
+
+a { color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.wrap {
+  max-width: var(--column);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.measure { max-width: var(--measure); }
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--paper);
+  color: var(--ink);
+  padding: .75rem 1rem;
+  z-index: 10;
+}
+.skip:focus { left: 0; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- language blocks (mechanism B) ---------- */
+/* Every variant is hidden by an author rule; `revert` restores the UA display
+   value for the active one, so <p> becomes block and <span> becomes inline.
+   Never add the `hidden` attribute here — `revert` would roll back into it. */
+.i18n > * { display: none; }
+[data-lang="en"] .i18n > [lang|="en"],
+[data-lang="zh"] .i18n > [lang|="zh"],
+[data-lang="ko"] .i18n > [lang|="ko"] { display: revert; }
+
+/* ---------- navigation ---------- */
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1rem 1.5rem;
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.nav__brand {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav__brand svg { width: 28px; height: 28px; flex: none; }
+
+.nav__links { display: flex; gap: 1.5rem; }
+
+.nav a:not(.nav__brand) {
+  font-size: var(--text-sm);
+  text-decoration: none;
+  padding-block: .25rem;
+  border-bottom: 3px solid transparent;
+}
+
+.nav a[aria-current="page"] { border-bottom-color: var(--gold); }
+
+.nav__langs {
+  margin-inline-start: auto;
+  display: flex;
+  gap: .25rem;
+}
+
+.nav__langs button {
+  font: inherit;
+  font-size: var(--text-sm);
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  padding: .35rem .7rem;
+  min-height: 44px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: border-color 120ms, color 120ms;
+}
+
+.nav__langs button[aria-pressed="true"] { border-bottom-color: var(--gold); }
+
+/* ---------- hero ---------- */
+.hero { padding-block: 4rem 6rem; }
+
+.hero__sub {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  margin: 0 0 .5rem;
+}
+
+.hero h1 { font-size: var(--text-3xl); }
+
+.hero__line {
+  width: max-content;
+  max-width: 100%;
+  border-bottom: 3px solid var(--gold);
+  margin-block: 1rem 2rem;
+  padding-inline-end: 4rem;
+}
+
+.hero__lede { font-size: var(--text-lg); max-width: var(--measure); margin: 0; }
+
+/* ---------- announcement ---------- */
+.announce {
+  background: var(--paper-deep);
+  border-left: 3px solid var(--gold);
+  padding: 2rem;
+  margin-block: 2rem;
+  font-size: var(--text-lg);
+}
+
+.announce p { margin: 0; max-width: var(--measure); }
+
+/* ---------- statistics ---------- */
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3rem;
+  padding-block: 4rem;
+  border-top: 1px solid var(--rule);
+}
+
+.stats__value {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  line-height: 1;
+}
+
+.stats__label {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  margin-top: .5rem;
+}
+
+@media (max-width: 40rem) { .stats { flex-direction: column; gap: 2rem; } }
+
+/* ---------- figures ---------- */
+.essay { padding-block: 4rem; border-top: 1px solid var(--rule); }
+
+.essay h2 { font-size: var(--text-xl); margin-bottom: .25rem; }
+
+.essay__date {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  margin: 0 0 1.5rem;
+}
+
+.essay p { max-width: var(--measure); }
+
+figure { margin: 0 0 2rem; }
+
+figure img { border: 1px solid var(--rule-strong); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) figure img { border-color: transparent; }
+}
+
+figcaption {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  margin-top: .5rem;
+}
+
+/* ---------- FAQ ---------- */
+.faq { padding-block: 4rem; border-top: 1px solid var(--rule); }
+
+.faq h2 { font-size: var(--text-xl); margin-bottom: 1.5rem; }
+
+.faq details { border-top: 1px solid var(--rule); }
+.faq details:last-of-type { border-bottom: 1px solid var(--rule); }
+
+.faq summary {
+  cursor: pointer;
+  padding: 1rem 0 1rem 1.5rem;
+  position: relative;
+  list-style: none;
+}
+
+.faq summary::-webkit-details-marker { display: none; }
+
+.faq summary::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.5rem;
+  width: .5rem;
+  height: .5rem;
+  border-right: 3px solid var(--gold);
+  border-bottom: 3px solid var(--gold);
+  transform: rotate(-45deg);
+  transition: transform 120ms;
+}
+
+.faq details[open] summary::before { transform: rotate(45deg); }
+
+.faq details .i18n > p { margin: 0 0 1rem 1.5rem; max-width: var(--measure); }
+
+/* ---------- prose (resources, tryouts, 404) ---------- */
+.prose { padding-block: 3rem 5rem; }
+
+.prose > * { max-width: var(--measure); }
+
+.prose h1 { font-size: var(--text-2xl); }
+
+.prose h1 + p { margin-top: 1.5rem; }
+
+.prose h2 {
+  font-size: var(--text-xl);
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+}
+
+.prose h2 code {
+  background: var(--gold-wash);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0 .25em;
+}
+
+.prose a {
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: .12em;
+}
+
+.prose a:hover,
+.prose a:focus-visible {
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 2px;
+}
+
+.prose ul { list-style: none; padding-left: 1.25rem; }
+
+.prose li { position: relative; margin-bottom: .5rem; }
+
+.prose li::before {
+  content: "–";
+  position: absolute;
+  left: -1.25rem;
+  color: var(--gold);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: .9em;
+  background: var(--paper-deep);
+  padding: .1em .35em;
+}
+
+/* ---------- check-in ---------- */
+.checkin { padding-block: 3rem 5rem; max-width: var(--measure); }
+
+.checkin h1 { font-size: var(--text-2xl); margin-bottom: 2rem; }
+
+.checkin fieldset,
+.checkin .field { border: 0; padding: 0; margin: 0 0 2rem; }
+
+.checkin legend {
+  padding: 0;
+  margin-bottom: .75rem;
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.boxes { display: flex; gap: .25rem; }
+
+.boxes--id .boxes__group { display: flex; gap: .25rem; }
+.boxes--id { gap: .75rem; }
+
+.boxes input {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-lg);
+  text-align: center;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  height: 48px;
+  width: clamp(1.6rem, 7.5vw, 2.75rem);
+  padding: 0;
+  transition: border-color 120ms;
+}
+
+.boxes input:focus { border-color: var(--rule-strong); }
+
+/* Nine boxes cannot each be 44px wide at 320px. Height carries the touch
+   target; width is as generous as the viewport allows. */
+
+.checkin label { display: block; font-size: var(--text-sm); color: var(--ink-muted); margin-bottom: .5rem; }
+
+.checkin textarea,
+.checkin input[type="text"].plain {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: .625rem .75rem;
+  width: 100%;
+}
+
+.checkin textarea { min-height: 6rem; resize: vertical; }
+
+.checkin .leaving { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.checkin .leaving label { margin: 0; }
+.checkin .leaving input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: var(--gold); }
+.checkin .leaving input[type="time"] { font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--rule); padding: .35rem .5rem; }
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  color: #132749;
+  background: var(--gold);
+  border: 0;
+  border-radius: 0;
+  padding: .875rem 2rem;
+  min-height: 48px;
+  cursor: pointer;
+  transition: opacity 120ms;
+}
+
+.btn:hover { opacity: .85; }
+.btn[disabled] { opacity: .5; cursor: default; }
+
+@media (max-width: 30rem) { .btn { width: 100%; } }
+
+.error { color: var(--danger); font-size: var(--text-sm); margin-top: .75rem; }
+.error:empty { display: none; }
+
+.hint { font-size: var(--text-xs); color: var(--ink-muted); margin-top: .75rem; }
+
+.hint button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.result__line { border-top: 3px solid var(--gold); margin-block: 1.5rem; }
+
+/* ---------- footer ---------- */
+.footer {
+  border-top: 1px solid var(--rule);
+  padding-block: 2rem 3rem;
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.footer p { margin: 0; }
+
+/* ---------- motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
