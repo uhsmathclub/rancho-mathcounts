@@ -23,7 +23,7 @@ Two brand colors, one paper, one ink. Everything else is a tint of those.
 | `navy`       | `#132749` | Brand primary. Body text, headings, rules, logo field, dark-mode canvas   |
 | `gold`       | `#fdb717` | Brand accent. Fills, underlines, the line motif, focus ring, active state |
 | `paper`      | `#fbf7ef` | Page canvas in light mode. Warm off-white, never pure white               |
-| `paper-deep` | `#f2ece0` | Optional second surface: announcement block, quotes, code                 |
+| `paper-deep` | `#f2ece0` | Second surface: the home page announcement block, quotes, inline code     |
 | `ink`        | `#132749` | Alias of `navy` for text roles                                           |
 | `ink-muted`  | `#5a6580` | Captions, dates, metadata, helper text, placeholder                      |
 | `rule`       | `#d9d2c4` | Hairline dividers and input borders at rest                              |
@@ -45,7 +45,8 @@ Define these on `:root` and redefine them under a dark-mode block. Never write a
   --rule:         #d9d2c4;
   --rule-strong:  #132749;
   --gold:         #fdb717;
-  --gold-wash:    rgba(253, 183, 23, 0.22);
+  --brand-navy:   #132749;  /* fixed: never flips with the theme */
+  --brand-gold:   #fdb717;  /* fixed: never flips with the theme */
   --focus:        #132749;
   --danger:       #a3281e;
   --success:      #1f6b4a;
@@ -59,7 +60,6 @@ Define these on `:root` and redefine them under a dark-mode block. Never write a
     --ink-muted:   #a8b2c6;
     --rule:        #2d4270;
     --rule-strong: #fbf7ef;
-    --gold-wash:   rgba(253, 183, 23, 0.20);
     --focus:       #fdb717;
     --danger:      #ff9d92;
     --success:     #7fd3a8;
@@ -227,7 +227,7 @@ The logo is one continuous gold stroke. The site repeats that gesture in four sa
 
 1. **The hero line** — a 3px gold rule directly under the page title, inset to the width of the title text.
 2. **The active marker** — a 3px gold underline under the current nav item and the current language.
-3. **The highlight** — `--gold-wash` behind a short run of text, like a marker pass, at most once per page.
+3. **The inverted block** — a solid navy field with gold text, for section headings on the resources page. Gold on navy is 8.5:1, so gold may be a letterform inside it. Both colours are fixed (`--brand-navy`, `--brand-gold`) so the block reads identically in dark mode.
 4. **The focus ring** — see **Accessibility**.
 
 Anything beyond these four is decoration this site does not need.
@@ -238,7 +238,7 @@ Photos are the emotional content of the home page and must be treated as the art
 
 - Full-bleed or full-column width. Never in a rounded card, never with a shadow.
 - A `1px` navy hairline on all four sides in light mode; none in dark mode.
-- The caption sits directly beneath in `--text-sm` `--ink-muted`, translated alongside the rest of the page.
+- The caption sits **inside** the photograph, along the bottom edge, on a half-opaque navy plate with paper-coloured text. Both colours are fixed rather than themed: the plate has to stay readable over an unknown image in either mode. It is still a real `<figcaption>`, translated with the rest of the page.
 - Always `loading="lazy"` except the hero image, and always explicit `width`/`height` to reserve space.
 - Serve modern formats with fallbacks and real `srcset` widths. Never ship HEIC to a browser.
 - `alt` describes the photograph for someone who cannot see it. The caption is not the alt text.
@@ -246,7 +246,7 @@ Photos are the emotional content of the home page and must be treated as the art
 ### No Shadows, No Motion Theater
 
 - `box-shadow` is not used anywhere on this site.
-- `border-radius` is `0` everywhere except the check-in digit boxes (`4px`) and the language controls (`999px`).
+- `border-radius` is `0` everywhere except the check-in digit boxes (`4px`). Nothing on this site is a pill. A rounded control bends the gold marker under it into a curve, and it stops matching the straight rules everywhere else.
 - Transitions are limited to `120ms` on `color`, `background-color`, `border-color`, and `opacity`. No transforms, no entrance animations, no scroll-triggered reveals.
 - The only animated element on the site is the check-in loading state, and it must respect `prefers-reduced-motion`.
 
@@ -336,7 +336,8 @@ A single row, present on all four pages, and nothing else in it.
 | After it    | Page link(s) — Tryouts, Resources                                  |
 | Far right   | Language switcher — `English` `中文` `한국어`                        |
 
-- The wordmark is display serif at `--text-lg` and is never translated.
+- The wordmark is display serif at `--text-lg`, bold, and never translated. The rest of the bar is the body sans at 600.
+- **Every item in the bar is the same height** (44px) with the same 3px transparent bottom border, so the gold markers under the current page and the current language sit on one line. Align the row on `center`, never on `baseline` — the wordmark is a different size and a different family, and baseline alignment visibly lifts it above the links.
 - The logo and wordmark are one link with one accessible name; the SVG is `aria-hidden`.
 - The current page's link carries the gold underline and `aria-current="page"`.
 - There is no hamburger menu. At narrow widths the row wraps to two lines: identity on top, links and languages beneath.
@@ -373,7 +374,7 @@ Native `<details>` / `<summary>`. No JavaScript.
 The resources page is compiled markdown. Style the raw elements; do not wrap them in components.
 
 - `h1` → `--text-2xl` display, gold line beneath.
-- `h2` → `--text-xl` display, `space-12` above. The resource-list `h2`s carry a `--gold-wash` marker highlight.
+- `h2` → `--text-xl` display, `space-12` above. The resource-list `h2`s are set in gold on a navy block. The markdown writes them in backticks, but they must not look like code: the inverted block replaces the monospace chip entirely.
 - `p`, `li` → `--text-base`, capped at measure, `space-6` rhythm.
 - Links: navy text with a `1px` `--rule-strong` underline at `0.12em` offset, becoming a 2px gold underline on hover and focus. Never blue, never `text-decoration: none`.
 - External links open in the same tab. Do not hijack the reader's back button.
@@ -405,7 +406,7 @@ The page is a **gate, then a form.** Nothing behind the gate — including the d
 - **Saved ID:** on success the ID goes to `localStorage`, and on return step 2's boxes prefill — but the student still passes the gate first. A `--text-xs` line offers to clear it, so a shared device can forget a student in one click.
 - **Submit** is a real `<button type="submit">` inside a real `<form>`. Gold fill, navy text, square, full width under 30rem.
 
-**Step 3 — result.** Replaces step 2. Greeting in display serif at `--text-2xl`, the student's personal message beneath in prose styling, a `--line-gold` above it. Focus moves to the greeting heading so screen reader users are not stranded.
+**Step 3 — result.** Replaces step 2. Greeting in display serif at `--text-2xl`, the student's personal message beneath in prose styling, a `--line-gold` above it. The greeting is the confirmation; do not add a second line restating that the check-in worked. Focus moves to the greeting heading so screen reader users are not stranded.
 
 **Errors.** Specific, in `--danger`, beneath the relevant fieldset, announced politely, never a modal:
 
@@ -431,6 +432,7 @@ Display heading, one sentence of explanation, and a link home. Translated. Same 
 Non-negotiable, and cheap at this scale.
 
 - **Focus is always visible.** `outline: 2px solid var(--focus); outline-offset: 2px;` on `:focus-visible`. Never `outline: none` without an equal replacement. The ring is navy in light mode and gold in dark mode.
+- **One exception:** a heading that receives focus only programmatically, to move a screen reader to a new step, carries `tabindex="-1"` and suppresses its ring. It is unreachable by Tab, so the ring signals nothing and reads as an unexplained outline around a title. This is the only place `outline: none` is allowed.
 - **Contrast** meets WCAG AA at minimum; see **The Contrast Rule**. `--ink-muted` is the floor for small text.
 - **Semantic HTML first.** `<nav>`, `<main>`, `<footer>`, `<button>`, `<form>`, `<details>`, real headings in order, exactly one `<h1>` per page. No `<div onclick>`.
 - **Skip link** to `<main>` as the first focusable element on every page.
@@ -440,6 +442,7 @@ Non-negotiable, and cheap at this scale.
 - **`lang` is always correct** on `<html>` and on each Mechanism B block. Mislabeled language makes a screen reader unintelligible.
 - **The site works without JavaScript** except for the language switch and check-in. English content, navigation, the FAQ, and the resources list must all render and function with JS off.
 - **Never `user-scalable=no`.** The viewport meta allows zoom.
+- **Declare `color-scheme`** on `:root`. Without it the browser paints native controls light whatever the page does, and the time picker's clock glyph turns into a dark smudge on the navy canvas. Chrome needs `::-webkit-calendar-picker-indicator { filter: invert(1) }` on top, because that glyph is a bitmap.
 
 * * *
 
@@ -466,9 +469,15 @@ These are the tells of generated filler. None of them appear on this site.
 - `We're passionate about excellence`
 - `Seamless`, `robust`, `leverage`, `elevate`, `journey`, `dive in`, `unlock`
 - Em-dash-heavy triplets used for rhythm rather than meaning
-- `Click here`, `Learn more`, `Submit`, `Oops!`, `Something went wrong`
+- `Click here`, `Learn more`, `Oops!`, `Something went wrong`
 - Emoji in body copy
 - Any sentence that would be equally true of a dentist's office
+
+### Say It Once
+
+A heading and the control beneath it must not say the same words. `Today's Code` above a legend reading `Today's code`, or `Check In` above a button reading `Check in`, reads as a stutter and wastes the one line that could have been useful. Give the second one a job: the legend says where to find the code, and the button says what pressing it does.
+
+A plain label like `Submit` is fine when the heading above it has already named the task. It is only weak when it stands alone.
 
 ### The Approval Rule
 
@@ -492,7 +501,8 @@ When proposing copy, present it as a table of English / Chinese / Korean and wai
 
 - GitHub Pages at `mc.uhsmathclub.org`, with a `CNAME` file and HTTPS enforced.
 - Clean URLs come from directory indexes: `/tryouts/index.html`, `/resources/index.html`, `/hello/index.html`. Do not rely on extensionless `.html` serving.
-- Content sources (`home.yml`, `tryouts.md`, `resources.md`) compile to HTML in CI. The deployed artifact is built, not committed, so the repository stays readable.
+- Content sources compile to HTML in CI. The deployed artifact is built, not committed, so the repository stays readable.
+- The repository root holds only `build.py`, `requirements.txt`, `SKILL.md`, and the dotfiles. Everything else is grouped: `content/` for the YAML and markdown a coach edits, `assets/` for photographs and the logo, `templates/` for the page templates and the stylesheet, `apps-script/` for the fallback web app. A root that fits on one screen is worth the extra path segment.
 - One stylesheet, one script, both small enough to consider inlining. No bundler, no framework, no dependency tree that will rot.
 - `/hello` is `noindex`.
 
@@ -518,7 +528,9 @@ Three things here are easy to get wrong and silently destructive:
 
 **Checking in twice** overwrites that student's `Dashboard` row — there is one row per student — and appends another `Log` entry. The log is the record; the dashboard is the view.
 
-**Resetting** is a menu item, never a trigger. `New day` rolls a fresh code, clears the per-day columns (`C` through `F`) and the name bolding, and appends a **new dated column** to `Attendance` with the VLOOKUP formula filled down. `New code only` re-rolls the code mid-session without clearing anything.
+**Resetting** is a menu item, never a trigger. `New day` rolls a fresh code and clears the per-day columns (`C` through `F`) and the name bolding. `New code only` re-rolls the code mid-session without clearing anything. Neither writes to `Attendance`: those columns are added by hand, and their formulas read the `Log`, so the script never needs to.
+
+Neither action announces the new code. It lands in `B1`, in front of whoever ran the menu item, and a dialog on top of it would only need dismissing.
 
 ### The Day Code
 
@@ -545,7 +557,7 @@ The Apps Script web app is the backup for when Pages or DNS fails, and it must s
 
 - Gold text on a light background
 - Pure white backgrounds
-- Cards, rounded containers, drop shadows, gradients, glassmorphism
+- Cards, rounded containers, pill controls, drop shadows, gradients, glassmorphism
 - A hamburger menu on a four-page site
 - A `<select>` for the language switcher
 - Text built by concatenating translated fragments

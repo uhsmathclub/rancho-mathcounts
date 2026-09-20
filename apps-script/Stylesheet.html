@@ -13,10 +13,18 @@
   --rule: #d9d2c4;
   --rule-strong: #132749;
   --gold: #fdb717;
-  --gold-wash: rgba(253, 183, 23, .22);
   --focus: #132749;
   --danger: #a3281e;
   --success: #1f6b4a;
+
+  /* Fixed brand pair for blocks that keep navy-on-gold or gold-on-navy in
+     both themes. These deliberately do NOT flip in dark mode. */
+  --brand-navy: #132749;
+  --brand-gold: #fdb717;
+
+  /* Lets the UA draw form controls, including the time picker's clock icon,
+     to match the active theme instead of always light. */
+  color-scheme: light dark;
 
   --font-display: Georgia, "Noto Serif", "Liberation Serif", "Times New Roman", serif;
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -43,21 +51,22 @@
     --ink-muted: #a8b2c6;
     --rule: #2d4270;
     --rule-strong: #fbf7ef;
-    --gold-wash: rgba(253, 183, 23, .20);
     --focus: #fdb717;
     --danger: #ff9d92;
     --success: #7fd3a8;
   }
 }
 
+:root[data-theme="light"] { color-scheme: light; }
+
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --paper: #132749;
   --paper-deep: #1b3159;
   --ink: #fbf7ef;
   --ink-muted: #a8b2c6;
   --rule: #2d4270;
   --rule-strong: #fbf7ef;
-  --gold-wash: rgba(253, 183, 23, .20);
   --focus: #fdb717;
   --danger: #ff9d92;
   --success: #7fd3a8;
@@ -164,20 +173,24 @@ a { color: inherit; }
 .nav {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 1rem 1.5rem;
-  padding-block: 1.5rem;
+  align-items: center;
+  gap: .5rem 1.5rem;
+  padding-block: 1rem;
   border-bottom: 1px solid var(--rule);
+  font-weight: 600;
 }
 
 .nav__brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  min-height: 44px;
   gap: .5rem;
   font-family: var(--font-display);
   font-size: var(--text-lg);
+  font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
+  border-bottom: 3px solid transparent;
 }
 
 .nav__brand svg { width: 28px; height: 28px; flex: none; }
@@ -185,9 +198,12 @@ a { color: inherit; }
 .nav__links { display: flex; gap: 1.5rem; }
 
 .nav a:not(.nav__brand) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-size: var(--text-sm);
+  font-weight: 600;
   text-decoration: none;
-  padding-block: .25rem;
   border-bottom: 3px solid transparent;
 }
 
@@ -196,18 +212,24 @@ a { color: inherit; }
 .nav__langs {
   margin-inline-start: auto;
   display: flex;
-  gap: .25rem;
+  align-items: center;
+  gap: .5rem;
 }
 
 .nav__langs button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font: inherit;
   font-size: var(--text-sm);
+  font-weight: 600;
   color: inherit;
   background: none;
   border: 0;
-  border-radius: 999px;
-  padding: .35rem .7rem;
-  min-height: 44px;
+  /* Square, like every other rule on the site. A pill radius bends the gold
+     marker into a curve and it stops matching the nav links. */
+  border-radius: 0;
+  padding: 0 .5rem;
   cursor: pointer;
   border-bottom: 3px solid transparent;
   transition: border-color 120ms, color 120ms;
@@ -216,7 +238,7 @@ a { color: inherit; }
 .nav__langs button[aria-pressed="true"] { border-bottom-color: var(--gold); }
 
 /* ---------- hero ---------- */
-.hero { padding-block: 4rem 6rem; }
+.hero { padding-block: 3rem 2.5rem; }
 
 .hero__sub {
   font-size: var(--text-sm);
@@ -230,7 +252,7 @@ a { color: inherit; }
   width: max-content;
   max-width: 100%;
   border-bottom: 3px solid var(--gold);
-  margin-block: 1rem 2rem;
+  margin-block: .75rem 1.5rem;
   padding-inline-end: 4rem;
 }
 
@@ -240,8 +262,8 @@ a { color: inherit; }
 .announce {
   background: var(--paper-deep);
   border-left: 3px solid var(--gold);
-  padding: 2rem;
-  margin-block: 2rem;
+  padding: 1.5rem 1.75rem;
+  margin-block: 0 3rem;
   font-size: var(--text-lg);
 }
 
@@ -252,7 +274,7 @@ a { color: inherit; }
   display: flex;
   flex-wrap: wrap;
   gap: 3rem;
-  padding-block: 4rem;
+  padding-block: 3rem;
   border-top: 1px solid var(--rule);
 }
 
@@ -271,7 +293,7 @@ a { color: inherit; }
 @media (max-width: 40rem) { .stats { flex-direction: column; gap: 2rem; } }
 
 /* ---------- figures ---------- */
-.essay { padding-block: 4rem; border-top: 1px solid var(--rule); }
+.essay { padding-block: 3rem; border-top: 1px solid var(--rule); }
 
 .essay h2 { font-size: var(--text-xl); margin-bottom: .25rem; }
 
@@ -291,14 +313,25 @@ figure img { border: 1px solid var(--rule-strong); }
   :root:not([data-theme="light"]) figure img { border-color: transparent; }
 }
 
-figcaption {
+/* The caption sits inside the photograph, on a half-opaque navy field.
+   Both colours are fixed: the plate has to work over an unknown image in
+   either theme, and paper on 65% navy stays comfortably readable. */
+.essay figure { position: relative; }
+
+.essay figcaption {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  margin: 0;
+  padding: .5rem .875rem .625rem;
+  background: rgba(19, 39, 73, .65);
+  color: #fbf7ef;
   font-size: var(--text-sm);
-  color: var(--ink-muted);
-  margin-top: .5rem;
 }
 
 /* ---------- FAQ ---------- */
-.faq { padding-block: 4rem; border-top: 1px solid var(--rule); }
+.faq { padding-block: 3rem; border-top: 1px solid var(--rule); }
 
 .faq h2 { font-size: var(--text-xl); margin-bottom: 1.5rem; }
 
@@ -307,20 +340,21 @@ figcaption {
 
 .faq summary {
   cursor: pointer;
-  padding: 1rem 0 1rem 1.5rem;
-  position: relative;
+  padding: .875rem 0;
   list-style: none;
+  display: flex;
+  align-items: center;
+  gap: .875rem;
 }
 
 .faq summary::-webkit-details-marker { display: none; }
 
 .faq summary::before {
   content: "";
-  position: absolute;
-  left: 0;
-  top: 1.5rem;
-  width: .5rem;
-  height: .5rem;
+  flex: none;
+  width: .45rem;
+  height: .45rem;
+  margin-inline-start: .15rem;
   border-right: 3px solid var(--gold);
   border-bottom: 3px solid var(--gold);
   transform: rotate(-45deg);
@@ -329,7 +363,7 @@ figcaption {
 
 .faq details[open] summary::before { transform: rotate(45deg); }
 
-.faq details .i18n > p { margin: 0 0 1rem 1.5rem; max-width: var(--measure); }
+.faq details .i18n > p { margin: 0 0 1rem 1.85rem; max-width: var(--measure); }
 
 /* ---------- prose (resources, tryouts, 404) ---------- */
 .prose { padding-block: 3rem 5rem; }
@@ -346,11 +380,15 @@ figcaption {
   margin-bottom: 1rem;
 }
 
+/* Gold on navy is 8.5:1, so gold may be a letterform here even in light
+   mode. Both colours are fixed so the block reads the same in dark mode. */
 .prose h2 code {
-  background: var(--gold-wash);
+  background: var(--brand-navy);
+  color: var(--brand-gold);
   font-family: inherit;
   font-size: inherit;
-  padding: 0 .25em;
+  font-weight: inherit;
+  padding: .05em .4em .15em;
 }
 
 .prose a {
@@ -387,7 +425,11 @@ figcaption {
 /* ---------- check-in ---------- */
 .checkin { padding-block: 3rem 5rem; max-width: var(--measure); }
 
-.checkin h1 { font-size: var(--text-2xl); margin-bottom: 2rem; }
+.checkin h1 { font-size: var(--text-2xl); margin-bottom: 1.5rem; }
+
+/* Focus moves here so screen readers follow the step change. These headings
+   are never reachable by Tab, so the ring would only ever confuse. */
+.checkin h1[tabindex="-1"]:focus { outline: none; }
 
 .checkin fieldset,
 .checkin .field { border: 0; padding: 0; margin: 0 0 2rem; }
@@ -439,10 +481,34 @@ figcaption {
 
 .checkin textarea { min-height: 6rem; resize: vertical; }
 
-.checkin .leaving { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.checkin .leaving {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
 .checkin .leaving label { margin: 0; }
 .checkin .leaving input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: var(--gold); }
-.checkin .leaving input[type="time"] { font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--rule); padding: .35rem .5rem; }
+.checkin .leaving input[type="time"] {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  padding: .35rem .5rem;
+  min-height: 44px;
+}
+
+/* Chrome draws the clock glyph as a dark bitmap regardless of color-scheme. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+:root[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
 
 .btn {
   font: inherit;

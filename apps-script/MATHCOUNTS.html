@@ -40,7 +40,8 @@
         <h1 id="gate-heading" tabindex="-1" data-zh="今日代码" data-ko="오늘의 코드">Today's Code</h1>
 
         <fieldset>
-          <legend data-zh="今日代码" data-ko="오늘의 코드">Today's code</legend>
+          <legend data-zh="请输入白板上的代码。"
+            data-ko="칠판에 적힌 코드를 입력하세요.">Enter the code on the board.</legend>
           <div class="boxes" id="code-boxes">
             <input type="text" inputmode="text" autocapitalize="characters" autocomplete="off"
               autocorrect="off" spellcheck="false" maxlength="1"
@@ -137,7 +138,7 @@
 
         <p class="error" id="checkin-error" role="status" aria-live="polite"></p>
 
-        <button class="btn" type="submit" id="checkin-submit" data-zh="签到" data-ko="체크인">Check in</button>
+        <button class="btn" type="submit" id="checkin-submit" data-zh="提交" data-ko="제출">Submit</button>
       </form>
 
       <div id="result" hidden>
@@ -145,7 +146,6 @@
           data-template-en="Welcome, {name}."
           data-template-zh="{name}，欢迎回来。"
           data-template-ko="{name} 님, 환영합니다."></h1>
-        <p data-zh="签到成功。" data-ko="체크인이 완료되었습니다.">You're checked in.</p>
         <div class="result__line" id="result-line" hidden></div>
         <div id="personal-message"></div>
       </div>

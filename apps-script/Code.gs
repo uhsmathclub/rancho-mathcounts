@@ -20,7 +20,6 @@ var SS = SpreadsheetApp.getActiveSpreadsheet();
 
 var DASHBOARD = "Dashboard";
 var LOG = "Log";
-var ATTENDANCE = "Attendance";
 
 var CODE_CELL = "B1";
 var ANNOUNCEMENT_CELL = "C1";
@@ -48,7 +47,8 @@ function onOpen() {
 
 /**
  * Start a meeting: roll a new code, clear the day's columns, un-bold the
- * names, and add a dated attendance column.
+ * names. Attendance columns are added by hand — the formulas there read the
+ * Log, so nothing in this script needs to touch that sheet.
  */
 function newDay() {
   var sheet = SS.getSheetByName(DASHBOARD);
@@ -60,15 +60,12 @@ function newDay() {
     sheet.getRange(FIRST_STUDENT_ROW, 3, rows, 4).clearContent(); // C through F
   }
 
-  addAttendanceColumn_();
-  var code = rollCode_();
-  SpreadsheetApp.getUi().alert("Today's code is " + code);
+  rollCode_();
 }
 
 /** Re-roll the code mid-meeting without clearing anything. */
 function newCodeOnly() {
-  var code = rollCode_();
-  SpreadsheetApp.getUi().alert("Today's code is " + code);
+  rollCode_();
 }
 
 function rollCode_() {
@@ -91,48 +88,6 @@ function generateCode_() {
   }
   return code;
 }
-
-/** Append one dated column to Attendance, formulas and formatting included. */
-function addAttendanceColumn_() {
-  var sheet = SS.getSheetByName(ATTENDANCE);
-  var lastRow = sheet.getLastRow();
-  if (lastRow < 2) return;
-
-  var column = sheet.getLastColumn() + 1;
-  var letter = columnLetter_(column);
-
-  var today = new Date();
-  today.setHours(0, 0, 0, 0);
-  sheet.getRange(1, column).setValue(today);
-
-  var formulas = [];
-  for (var row = 2; row <= lastRow; row++) {
-    formulas.push([
-      "=IF(ISERROR(VLOOKUP($A" + row + ",FILTER(Log!$A$2:$A, " +
-      "INT(Log!$B$2:$B)=INT(" + letter + "$1)),1,FALSE)),FALSE,TRUE)"
-    ]);
-  }
-  sheet.getRange(2, column, formulas.length, 1).setFormulas(formulas);
-
-  // Carry over the date format and the checkboxes from the previous meeting.
-  if (column > 3) {
-    var source = sheet.getRange(1, column - 1, lastRow, 1);
-    var target = sheet.getRange(1, column, lastRow, 1);
-    source.copyTo(target, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
-    source.copyTo(target, SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION, false);
-  }
-}
-
-function columnLetter_(index) {
-  var letter = "";
-  while (index > 0) {
-    var remainder = (index - 1) % 26;
-    letter = String.fromCharCode(65 + remainder) + letter;
-    index = Math.floor((index - 1) / 26);
-  }
-  return letter;
-}
-
 
 /* ======================================================================
  * The day code
