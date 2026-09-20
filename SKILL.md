@@ -150,21 +150,21 @@ Korean has no comfortable system serif, so Korean display type uses a heavier we
 
 ```css
 :root {
-  --text-xs:   0.8125rem;                   /* 13px — metadata, footnotes  */
-  --text-sm:   0.9375rem;                   /* 15px — captions, labels, nav */
-  --text-base: 1.0625rem;                   /* 17px — body copy            */
-  --text-lg:   1.3125rem;                   /* 21px — lede, intros         */
-  --text-xl:   1.6875rem;                   /* 27px — section headings     */
+  --text-xs:   0.875rem;                    /* 14px — metadata, footnotes  */
+  --text-sm:   1rem;                        /* 16px — captions, labels, nav */
+  --text-base: 1.125rem;                    /* 18px — body copy            */
+  --text-lg:   1.375rem;                    /* 22px — lede, intros         */
+  --text-xl:   1.75rem;                     /* 28px — section headings     */
   --text-2xl:  clamp(2rem, 4vw, 2.625rem);  /* 32–42px — page titles       */
   --text-3xl:  clamp(2.75rem, 8vw, 4.5rem); /* 44–72px — hero, stat digits */
 }
 ```
 
-Body copy is 17px, not 16px. This site is read by twelve-year-olds and by parents on phones, and the extra pixel costs nothing.
+Body copy is 18px. This site is read by twelve-year-olds and by parents on phones, and the extra pixels cost nothing.
 
 ### Typographic Rules
 
-- **Measure is capped at 66 characters** (`max-width: 34rem`) for body copy. Never let a paragraph span a wide viewport.
+- **Measure is capped at 66 characters** (`max-width: 38rem`) for body copy. Never let a paragraph span a wide viewport.
 - **Line height:** `1.65` for Latin body, `1.15` for display, `1.85` for CJK body. CJK needs the extra leading — the glyphs are dense and square.
 - **Letter-spacing:** `-0.02em` on display sizes, `0` on body, and **never** on CJK text at any size. Letter-spaced CJK looks broken.
 - **No italics on CJK.** Browsers synthesize an oblique that is genuinely wrong. Force `font-style: normal` under `:lang(zh)` and `:lang(ko)` for `em`, `i`, and `cite`, and substitute weight or a gold underline for emphasis.
@@ -193,9 +193,11 @@ A 4px scale, used without exception.
 
 ### Layout
 
-- **One column.** The site is a single centered column at `max-width: 46rem` with a hard left alignment inside it. There is no grid system, no sidebar, and no multi-column text.
+- **One column.** The site is a single centered column at `max-width: 58rem` with a hard left alignment inside it. There is no grid system, no sidebar, and no multi-column text.
+- **The column is wider than the measure, on purpose.** Running text stays capped near 66 characters; the space left over is where the photographs sit. A page whose text and images are both the full column width looks like a document, not a layout.
 - **Page gutter is 16px minimum** at all viewport widths. No horizontal page scroll, ever.
-- **Full-bleed exception:** photographs and the hero gold line may break out to the full viewport width. Nothing else may.
+- **Photographs float beside the text and alternate sides** down the page — first one right, next one left. They take 46% of the column with a 2.5rem gutter against the text. The section is a `flow-root` so the float is contained without a clearfix. Below 48rem they unfloat to full width, because a column that narrow cannot hold readable text beside a picture.
+- **Full-bleed exception:** the hero gold line may break out to the full viewport width. Nothing else may.
 - **The stats row** is the one place a horizontal arrangement is allowed: three items, flex, wrapping to a vertical stack under 40rem.
 - **Vertical rhythm carries the design.** When a section feels wrong, the answer is almost always more space, not a border.
 
@@ -227,7 +229,7 @@ The logo is one continuous gold stroke. The site repeats that gesture in four sa
 
 1. **The hero line** — a 3px gold rule directly under the page title, inset to the width of the title text.
 2. **The active marker** — a 3px gold underline under the current nav item and the current language.
-3. **The inverted block** — a solid navy field with gold text, for section headings on the resources page. Gold on navy is 8.5:1, so gold may be a letterform inside it. Both colours are fixed (`--brand-navy`, `--brand-gold`) so the block reads identically in dark mode.
+3. **The caption plate** — a half-opaque navy field along the bottom edge of a photograph, carrying paper-coloured text. Both colours are fixed (`--brand-navy`, `--brand-gold`) so the plate reads the same over any image in either theme.
 4. **The focus ring** — see **Accessibility**.
 
 Anything beyond these four is decoration this site does not need.
@@ -339,6 +341,7 @@ A single row, present on all four pages, and nothing else in it.
 - The wordmark is display serif at `--text-lg`, bold, and never translated. The rest of the bar is the body sans at 600.
 - **Every item in the bar is the same height** (44px) with the same 3px transparent bottom border, so the gold markers under the current page and the current language sit on one line. Align the row on `center`, never on `baseline` — the wordmark is a different size and a different family, and baseline alignment visibly lifts it above the links.
 - The logo and wordmark are one link with one accessible name; the SVG is `aria-hidden`.
+- **The mark is 25px and carries a hair of bottom margin.** Georgia's optical centre sits above the middle of its line box, so a geometrically centred mark reads low next to the wordmark. The same correction applies to the FAQ chevron, which needs 2px of downward nudge to look centred on a line of mostly lowercase text. Both are optical, not arithmetic — do not "fix" them back to zero.
 - The current page's link carries the gold underline and `aria-current="page"`.
 - There is no hamburger menu. At narrow widths the row wraps to two lines: identity on top, links and languages beneath.
 - The nav does not stick to the top. The pages are short.
@@ -374,7 +377,7 @@ Native `<details>` / `<summary>`. No JavaScript.
 The resources page is compiled markdown. Style the raw elements; do not wrap them in components.
 
 - `h1` → `--text-2xl` display, gold line beneath.
-- `h2` → `--text-xl` display, `space-12` above. The resource-list `h2`s are set in gold on a navy block. The markdown writes them in backticks, but they must not look like code: the inverted block replaces the monospace chip entirely.
+- `h2` → `--text-xl` display, bold, flush with the body text, `space-8` above. No inverted block, no chip, no indent — the weight and the size are the whole signal. Headings in the markdown source are plain `##`; if backticks show up there they are an artefact of a Google Docs export and should be deleted at the source rather than styled around.
 - `p`, `li` → `--text-base`, capped at measure, `space-6` rhythm.
 - Links: navy text with a `1px` `--rule-strong` underline at `0.12em` offset, becoming a 2px gold underline on hover and focus. Never blue, never `text-decoration: none`.
 - External links open in the same tab. Do not hijack the reader's back button.
@@ -528,7 +531,18 @@ Three things here are easy to get wrong and silently destructive:
 
 **Checking in twice** overwrites that student's `Dashboard` row — there is one row per student — and appends another `Log` entry. The log is the record; the dashboard is the view.
 
-**Resetting** is a menu item, never a trigger. `New day` rolls a fresh code and clears the per-day columns (`C` through `F`) and the name bolding. `New code only` re-rolls the code mid-session without clearing anything. Neither writes to `Attendance`: those columns are added by hand, and their formulas read the `Log`, so the script never needs to.
+**The menu** is the only way anything runs. There are no triggers.
+
+| Item | Does |
+|------|------|
+| `New day` | Rolls a fresh code, clears `C` through `F`, un-bolds the names |
+| `New code only` | Re-rolls the code mid-meeting, clears nothing |
+| `New attendance column` | Appends one dated column to `Attendance`, formulas and checkboxes included |
+| `Evaluate template` | Expands the template in column D down the selection |
+| `Evaluate template and save note` | The same, keeping the template as a cell note |
+| `Restore template from note` | Puts the saved template back so it can be edited |
+
+Each does exactly one thing. `New day` does **not** add an attendance column: meetings get cancelled, codes get re-rolled, and a reset should never silently mark a column that did not happen.
 
 Neither action announces the new code. It lands in `B1`, in front of whoever ran the menu item, and a dialog on top of it would only need dismissing.
 
@@ -541,6 +555,28 @@ Neither action announces the new code. It lands in `B1`, in front of whoever ran
 
   State this honestly rather than overselling it. JavaScript on Apps Script cannot truly guarantee constant time, and network jitter to a Google endpoint dwarfs any timing signal a student could measure. It costs four lines and closes a whole category of argument, so it is worth doing — but the real protection is that 32^4 is 1,048,576, that Apps Script enforces its own quotas, and that the code rotates every meeting.
 - The code is validated **first**, before any student record is read, and never appears in a response body.
+
+### Message Templates
+
+A coach writes one message into column D and expands it down a selection. This is the only part of the system a coach programs, so it fails soft everywhere: an unknown token is left on the page exactly as typed rather than silently deleted.
+
+**Tokens** start with a backslash. `\Name` is the preferred first name, `\FullName` the whole of column A, `\LastName` its last word, `\LegalName` the part in parentheses. `\G`, `\H`, `\AA` read any column from G onward — A through F are the check-in's own columns and are never substitutable. `\n` is a line break and `\\` is a literal backslash.
+
+Three collisions have to be resolved in a fixed order, and the order is the design:
+
+1. `\\` first, so `\\Name` is a literal `\Name` and not a substitution.
+2. **Presets before column letters.** `L` is a perfectly good column, so `\LastName` would otherwise parse as column L followed by `astName`. Presets are matched longest-first for the same reason.
+3. **Longest valid column run.** `\GH` is column GH if that column exists, otherwise column G followed by a literal `H`.
+
+Expansion is one left-to-right pass. Substitution happens **before** the markdown pass, so a value pulled out of column G that happens to contain `**` will be read as formatting — acceptable, because every column here is written by a coach.
+
+**What the sheet can hold**, and therefore what expansion resolves into real cell formatting: `**bold**`, `*italic*`, `__underline__`, `~~strike~~`, `[text](url)`. Note that `__` means underline here, not bold as in CommonMark — a spreadsheet has underline and markdown has no syntax for it.
+
+**What the sheet cannot hold** stays as written and is parsed when the page renders: `#` headings, `>` blockquotes, `` `code` ``, and `![images](url)`. A coach's `#` starts at `<h3>`, because the page already owns its `<h1>`.
+
+**Evaluating is a preview, not a commit.** It exists so a coach can see the result before a meeting and so check-in does less work. If a cell still holds tokens or markers when a student checks in, it is expanded on the fly and the sheet is not written to.
+
+**The note is the source of truth once it exists.** A cell holding markers is a fresh edit and wins; otherwise the note is the template and the cell is the last run's output. That is what makes the whole thing idempotent — without it, the first expansion destroys the template it came from.
 
 ### Google Apps Script Fallback
 
@@ -586,7 +622,7 @@ The Apps Script web app is the backup for when Pages or DNS fails, and it must s
 
 **Typography**
 
-- [ ] Body copy is 17px and capped at ~66 characters
+- [ ] Body copy is 18px and capped at ~66 characters
 - [ ] Display serif checked on Windows and macOS (Georgia) **and** on ChromeOS/Android (Noto Serif / Tinos), where Georgia is absent
 - [ ] CJK uses its own stack, with no italics and no letter-spacing
 - [ ] En dashes in year ranges, curly quotes, real `π`

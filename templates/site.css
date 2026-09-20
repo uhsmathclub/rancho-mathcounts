@@ -28,17 +28,19 @@
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
 
-  --text-xs: .8125rem;
-  --text-sm: .9375rem;
-  --text-base: 1.0625rem;
-  --text-lg: 1.3125rem;
-  --text-xl: 1.6875rem;
+  --text-xs: .875rem;
+  --text-sm: 1rem;
+  --text-base: 1.125rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.75rem;
   --text-2xl: clamp(2rem, 4vw, 2.625rem);
   --text-3xl: clamp(2.75rem, 8vw, 4.5rem);
 
-  --measure: 34rem;
-  --column: 46rem;
-  --gutter: 1rem;
+  /* --measure caps running text near 66 characters; --column is the page.
+     The gap between them is where the floated photographs live. */
+  --measure: 38rem;
+  --column: 58rem;
+  --gutter: 1.25rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -191,7 +193,14 @@ a { color: inherit; }
   border-bottom: 3px solid transparent;
 }
 
-.nav__brand svg { width: 28px; height: 28px; flex: none; }
+/* Georgia's optical centre sits above the flex box's centre, so a
+   geometrically centred mark reads low. 25px and a hair of lift. */
+.nav__brand svg {
+  width: 25px;
+  height: 25px;
+  flex: none;
+  margin-block-end: .14em;
+}
 
 .nav__links { display: flex; gap: 1.5rem; }
 
@@ -291,7 +300,32 @@ a { color: inherit; }
 @media (max-width: 40rem) { .stats { flex-direction: column; gap: 2rem; } }
 
 /* ---------- figures ---------- */
-.essay { padding-block: 3rem; border-top: 1px solid var(--rule); }
+.essay {
+  padding-block: 3rem;
+  border-top: 1px solid var(--rule);
+  display: flow-root; /* contain the float without a clearfix hack */
+}
+
+.essay figure {
+  float: right;
+  width: 46%;
+  margin: .4rem 0 1.25rem 2.5rem;
+}
+
+.essay--left figure {
+  float: left;
+  margin: .4rem 2.5rem 1.25rem 0;
+}
+
+/* Below this the column is too narrow to read beside a picture. */
+@media (max-width: 48rem) {
+  .essay figure,
+  .essay--left figure {
+    float: none;
+    width: 100%;
+    margin: 0 0 1.5rem;
+  }
+}
 
 .essay h2 { font-size: var(--text-xl); margin-bottom: .25rem; }
 
@@ -353,6 +387,9 @@ figure img { border: 1px solid var(--rule-strong); }
   width: .45rem;
   height: .45rem;
   margin-inline-start: .15rem;
+  /* The chevron is geometrically centred already, but a line of mostly
+     lowercase text reads centred on its x-height, which sits lower. */
+  margin-block-start: 2px;
   border-right: 3px solid var(--gold);
   border-bottom: 3px solid var(--gold);
   transform: rotate(-45deg);
@@ -364,7 +401,7 @@ figure img { border: 1px solid var(--rule-strong); }
 .faq details .i18n > p { margin: 0 0 1rem 1.85rem; max-width: var(--measure); }
 
 /* ---------- prose (resources, tryouts, 404) ---------- */
-.prose { padding-block: 3rem 5rem; }
+.prose { padding-block: 2.5rem 2.5rem; }
 
 .prose > * { max-width: var(--measure); }
 
@@ -374,20 +411,12 @@ figure img { border: 1px solid var(--rule-strong); }
 
 .prose h2 {
   font-size: var(--text-xl);
-  margin-top: 3rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
   margin-bottom: 1rem;
 }
 
-/* Gold on navy is 8.5:1, so gold may be a letterform here even in light
-   mode. Both colours are fixed so the block reads the same in dark mode. */
-.prose h2 code {
-  background: var(--brand-navy);
-  color: var(--brand-gold);
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  padding: .05em .4em .15em;
-}
+
 
 .prose a {
   text-decoration: underline;

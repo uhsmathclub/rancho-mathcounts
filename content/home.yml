@@ -15,18 +15,18 @@ announce:
     Congratulations to everyone who participated in our competitive tryouts.
     We're excited to welcome 41 outstanding students to this year's program!
   zh: >-
-    祝贺所有参加本次选拔的同学！我们很高兴迎来 41 位优秀学生加入今年的项目。
+    祝贺所有参加了本次激烈选拔的同学！我们很高兴迎来41位格外出色的学生加入今年的项目。
   ko: >-
-    치열한 선발 과정에 참여해 준 모든 학생에게 축하를 전합니다. 올해 41명의 우수한
-    학생을 프로그램에 맞이하게 되어 기쁩니다!
+    경쟁 선발 시험에 참여한 모든 학생에 축하합니다. 올해 프로그램에 41명의 뛰어난 학생들을
+    맞이하게 되어 기쁩니다!
 
 main:
   head: Rancho MATHCOUNTS
 
   subtext:
     en: Rancho San Joaquin Middle School presents
-    zh: 兰乔圣华金中学呈献
-    ko: 란초 샌와킨 중학교가 선보입니다
+    zh: 兰乔圣华金中学办
+    ko: 란초 샌와킨 중학교 제공
 
   lede:
     en: >-
@@ -36,14 +36,14 @@ main:
       and develop as mathematicians. If you have any questions, please contact
       Liz Gastelum (Room B6).
     zh: >-
-      MATHCOUNTS 是一项每周课后开展的数学拓展项目，也是一个由 University High School
-      和 Sage High School 的教练共同带领的学习社群。我们致力于帮助学生备战数学竞赛，
+      MATHCOUNTS 是一项每周课后开展的数学拓展项目和学习社群。University High School
+      和 Sage High School 的教练负责辅导学生；我们致力于帮助学生备战数学竞赛，
       并在数学之路上不断成长。如有任何问题，请联系 Gastelum 老师（B6 教室）。
     ko: >-
-      MATHCOUNTS는 University High School과 Sage High School의 코치진이 이끄는 주 1회
-      방과 후 수학 심화 프로그램이자 학습 공동체입니다. 저희는 학생들이 수학 경시대회를
-      준비하고 수학자로서 성장할 수 있도록 돕습니다. 궁금한 점이 있으면 Gastelum
-      선생님(B6 교실)에게 문의해 주세요.
+      MATHCOUNTS는 주간 방과 후 수학 심화 프로그램입니다. University High School과 Sage High School      
+      코치들이 이끄는 학습 커뮤니티입니다. 학생들이 수학 경시대회를
+      준비하고 수학자로 성장할 수 있도록 돕습니다. 궁금한 점이 있으시면 Liz Gastelum
+      선생님(B6 교실)께 연락해 주세요.
 
   picture:
     src: home.jpg
@@ -52,7 +52,7 @@ main:
         The whole club gathered outside on campus for a group photo, some still
         holding plates of pie.
       zh: >-
-        全体社团成员在校园户外合影，有些人手里还端着装派的盘子。
+        全体社团成员在校园户外合影；有些人手里还端着装有派的盘子。
       ko: >-
         동아리 전체가 교내 야외에 모여 단체 사진을 찍고 있으며, 일부는 아직 파이 접시를
         들고 있습니다.
@@ -66,7 +66,7 @@ main:
     - value: 156
       label:
         en: Students Trying Out
-        zh: 参加选拔的学生
+        zh: 参加选拔赛的学生
         ko: 선발 참가 학생
     - value: 28
       label:
@@ -85,7 +85,7 @@ faq:
         both NHD and MATHCOUNTS this year, as they meet at the same time. We
         request that students make a choice.
       zh: >-
-        很遗憾，NHD 与 MATHCOUNTS 的活动时间冲突，今年无法两者兼顾，请同学们选择其一。
+        很遗憾，由于NHD 与 MATHCOUNTS 的活动时间冲突，今年无法两者兼顾，请同学们选择其一。
       ko: >-
         아쉽게도 NHD와 MATHCOUNTS는 같은 시간에 진행되어 올해는 두 프로그램에 모두
         참여할 수 없습니다. 둘 중 하나를 선택해 주세요.
@@ -96,7 +96,7 @@ pictures:
       en: >-
         Students stand around a classroom table covered with paper plates of pie.
       zh: >-
-        学生们围站在教室的桌子旁，桌上摆满了装着派的纸盘。
+        学生们围站在教室的桌子旁。桌上摆满了装着派的纸盘。
       ko: >-
         학생들이 파이가 담긴 종이 접시로 가득한 교실 탁자 주위에 둘러서 있습니다.
     caption:
@@ -138,7 +138,7 @@ pictures:
       ko: 주 대회 1위
     title:
       en: MATHCOUNTS is a lot of math
-      zh: MATHCOUNTS 也确实是很多很多数学
+      zh: MATHCOUNTS 也确实包含许多数学
       ko: MATHCOUNTS는 수학이 아주 많습니다
     date:
       en: March 21st, 2026
@@ -153,4 +153,4 @@ pictures:
         州级竞赛中荣获第一名。
       ko: >-
         Rancho MATHCOUNTS는 오랫동안 좋은 성적을 거두어 왔습니다. 지난해에는 남캘리포니아
-        MATHCOUNTS 주 대회에서 1위를 차지했습니다.
+        MATHCOUNTS 주 대회에서 1등 차지했습니다.

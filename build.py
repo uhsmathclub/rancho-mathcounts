@@ -37,7 +37,9 @@ APPS_SCRIPT = ROOT / "apps-script"
 DOMAIN = "mc.uhsmathclub.org"
 LANGS = {"en": "en", "zh": "zh-Hans", "ko": "ko"}
 IMAGE_WIDTHS = (800, 1600)
-SIZES = "(min-width: 48rem) 736px, 100vw"
+# The column is 58rem wide with 1.25rem gutters; a floated figure takes 46%
+# of it. Below 48rem the figure goes full width.
+SIZES = "(min-width: 60rem) 424px, (min-width: 48rem) 44vw, 100vw"
 
 md = MarkdownIt("commonmark").enable("table")
 
@@ -176,7 +178,7 @@ def build_images(sources: list[str]) -> dict:
 
 def minify_svg() -> str:
     """Strip the XML prolog and the <style> block, inlining the two fills."""
-    raw = (ASSETS / "mc_favicon.svg").read_text(encoding="utf-8")
+    raw = (ASSETS / "favicon.svg").read_text(encoding="utf-8")
     path = re.search(r'<path class="cls-2"[^>]*\sd="([^"]+)"', raw).group(1)
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170.18 170.18">'
@@ -298,10 +300,10 @@ def main() -> int:
         shutil.copy(TEMPLATES / name, OUT / name)
 
     svg = minify_svg()
-    (OUT / "mc_favicon.svg").write_text(svg, encoding="utf-8")
-    original = (ASSETS / "mc_favicon.svg").stat().st_size
-    print(f"icons:\n  mc_favicon.svg {original} -> {len(svg.encode())} bytes")
-    build_icons(ASSETS / "mc_favicon.svg")
+    (OUT / "favicon.svg").write_text(svg, encoding="utf-8")
+    original = (ASSETS / "favicon.svg").stat().st_size
+    print(f"icons:\n  favicon.svg {original} -> {len(svg.encode())} bytes")
+    build_icons(ASSETS / "favicon.svg")
 
     (OUT / "site.webmanifest").write_text(json.dumps({
         "name": "Rancho MATHCOUNTS",

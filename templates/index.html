@@ -28,7 +28,7 @@
 </section>
 
 {%- for item in home.pictures %}
-<section class="essay">
+<section class="essay{% if loop.index is even %} essay--left{% endif %}">
   <figure>
     {{ picture(item) }}
     <figcaption>{{ i18n(item.caption, 'span') }}</figcaption>

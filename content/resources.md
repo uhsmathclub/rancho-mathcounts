@@ -6,7 +6,7 @@ You don’t need to spend lots of money buying books (although we will link some
 
 The most important thing is to have fun \- if you can’t have fun while preparing, then not only will it be very painful, but you won’t be able to do well either.
 
-## `Learning`
+## Learning
 
 Morning Star Institute has some great free books [here](https://www.morningstarinstitute.org/textbooks/). You only need the first two \- the third is completely overkill for MATHCOUNTS.
 
@@ -20,7 +20,7 @@ Art of Problem Solving ([AoPS](https://artofproblemsolving.com/?srsltid=AfmBOoqL
 
 [AoPS Intro series](https://artofproblemsolving.com/store/list/all-products): Goes through all the content at a slower pace than Volume 1, with many more practice problems
 
-## `Practice`
+## Practice
 
 [For The Win\! (FTW)](https://artofproblemsolving.com/ftw) \- AoPS’s MATHCOUNTS Countdown-style practice. Only really helpful if you want to get fast, or want to do well in the Countdown round.
 
