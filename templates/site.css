@@ -558,6 +558,9 @@ figure img { border: 1px solid var(--rule-strong); }
 .error { color: var(--danger); font-size: var(--text-sm); margin-top: .75rem; }
 .error:empty { display: none; }
 
+/* Same slot, but nothing has gone wrong yet. */
+.error--busy { color: var(--success); }
+
 .hint { font-size: var(--text-xs); color: var(--ink-muted); margin-top: .75rem; }
 
 .hint button {

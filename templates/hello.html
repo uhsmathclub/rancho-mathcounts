@@ -13,7 +13,7 @@
       <div class="boxes" id="code-boxes">
         {%- for n in [1, 2, 3, 4] %}
         <input type="text" inputmode="text" autocapitalize="characters" autocomplete="off"
-          autocorrect="off" spellcheck="false" maxlength="1"
+          autocorrect="off" spellcheck="false" maxlength="1"{% if n == 1 %} autofocus{% endif %}
           aria-label="Today's code, character {{ n }} of 4"
           data-zh-aria-label="今日代码第 {{ n }} 位，共 4 位"
           data-ko-aria-label="오늘의 코드 {{ n }}번째 자리 (총 4자리)">

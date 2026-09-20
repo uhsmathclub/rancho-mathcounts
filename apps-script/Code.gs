@@ -64,6 +64,8 @@ function newDay() {
     var rows = lastRow - FIRST_STUDENT_ROW + 1;
     sheet.getRange(FIRST_STUDENT_ROW, 1, rows, 1).setFontWeight("normal");
     sheet.getRange(FIRST_STUDENT_ROW, 3, rows, 4).clearContent(); // C through F
+    // Only E and F. Column D's note is the message template and it stays.
+    sheet.getRange(FIRST_STUDENT_ROW, 5, rows, 2).clearNote();
   }
 
   rollCode_();
@@ -176,13 +178,19 @@ function checkIn(code, id, message, leaving) {
     var now = new Date();
     var name = sheet.getRange(row, 1).getDisplayValue();
     var response = String(message === null || message === undefined ? "" : message);
+    var leavingText = String(leaving === null || leaving === undefined ? "" : leaving);
+
+    // A second check-in overwrites the first. Push whatever E and F already
+    // held into their notes so a coach can still see that the student said
+    // they were leaving early, even after the answer was replaced.
+    var previousStamp = sheet.getRange(row, 3).getDisplayValue();
+    archiveCell_(sheet.getRange(row, 5), previousStamp);
+    archiveCell_(sheet.getRange(row, 6), previousStamp);
 
     sheet.getRange(row, 1).setFontWeight("bold");
     sheet.getRange(row, 3).setValue(now).setNumberFormat(STAMP_FORMAT);
     sheet.getRange(row, 5).setValue(response);
-    sheet.getRange(row, 6).setValue(
-      String(leaving === null || leaving === undefined ? "" : leaving)
-    );
+    sheet.getRange(row, 6).setValue(leavingText);
 
     // Log!B must be a real Date: the Attendance formulas compare INT() of it
     // against INT() of the date in row 1, and a text timestamp never matches.
@@ -198,6 +206,19 @@ function checkIn(code, id, message, leaving) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/**
+ * Append a cell's current contents to its own note before it is replaced.
+ * Column D is never archived this way: its note is the message template.
+ */
+function archiveCell_(cell, stamp) {
+  var previous = cell.getDisplayValue();
+  if (!previous) return;
+
+  var note = cell.getNote();
+  var entry = (stamp ? stamp + " - " : "") + previous;
+  cell.setNote(note ? note + "\n" + entry : entry);
 }
 
 /** Dashboard!A holds "Preferred (Legal) Last"; the greeting wants the first word. */
@@ -320,34 +341,66 @@ function restoreTemplateFromNote() {
   var rows = selectedMessageRows_(sheet);
   if (!rows) return;
 
-  for (var row = rows.top; row <= rows.bottom; row++) {
-    var cell = sheet.getRange(row, MESSAGE_COL);
-    var note = cell.getNote();
-    if (note) cell.setValue(note);
+  var count = rows.bottom - rows.top + 1;
+  var cells = sheet.getRange(rows.top, MESSAGE_COL, count, 1);
+  var notes = cells.getNotes();
+  var values = cells.getValues();
+
+  var out = [];
+  for (var i = 0; i < count; i++) {
+    out.push([notes[i][0] ? notes[i][0] : values[i][0]]);
   }
+  cells.setValues(out); // one write, so one undo
 }
 
+/**
+ * Read the whole block, expand it in memory, write it back in one call.
+ *
+ * Doing this cell by cell costs four API round trips per row and, worse,
+ * leaves one undo step per row behind: a coach who picks the wrong menu
+ * item would have to hold Ctrl+Z down. Batched, the values are a single
+ * undo, and saving notes adds exactly one more.
+ */
 function expandSelection_(saveNote) {
   var sheet = SS.getSheetByName(DASHBOARD);
   var rows = selectedMessageRows_(sheet);
   if (!rows) return;
 
   var lastColumn = sheet.getLastColumn();
+  var count = rows.bottom - rows.top + 1;
 
-  for (var row = rows.top; row <= rows.bottom; row++) {
-    var cell = sheet.getRange(row, MESSAGE_COL);
-    var rich = cell.getRichTextValues()[0][0];
-    var text = rich ? rich.getText() : "";
-    var note = cell.getNote();
+  var table = sheet.getRange(rows.top, 1, count, lastColumn).getDisplayValues();
+  var cells = sheet.getRange(rows.top, MESSAGE_COL, count, 1);
+  var rich = cells.getRichTextValues();
+  var notes = cells.getNotes();
+
+  var outValues = [];
+  var outNotes = [];
+  var touched = false;
+
+  for (var i = 0; i < count; i++) {
+    var current = rich[i][0] || SpreadsheetApp.newRichTextValue().setText("").build();
+    var text = current.getText();
+    var note = notes[i][0];
 
     // A cell that still has markers is a fresh edit and wins over the note.
     // Otherwise the note is the template and the cell is last run's output.
     var source = hasTemplateMarkup_(text) ? text : (note || text);
-    if (!source) continue;
 
-    if (saveNote) cell.setNote(source);
-    cell.setRichTextValue(buildRichText_(expandTokens_(source, sheet, row, lastColumn)));
+    if (!source) {
+      outValues.push([current]);
+      outNotes.push([note]);
+      continue;
+    }
+
+    touched = true;
+    outValues.push([buildRichText_(expandTokens_(source, table[i], lastColumn))]);
+    outNotes.push([source]);
   }
+
+  if (!touched) return;
+  cells.setRichTextValues(outValues);
+  if (saveNote) cells.setNotes(outNotes);
 }
 
 /** The part of the selection that lands in column D, from row 3 down. */
@@ -407,8 +460,7 @@ function columnIndexFromLetters_(letters) {
  * One left-to-right pass. Everything is resolved in source order so that
  * \\\\Name yields a literal \\Name rather than a substituted name.
  */
-function expandTokens_(source, sheet, row, lastColumn) {
-  var values = sheet.getRange(row, 1, 1, lastColumn).getDisplayValues()[0];
+function expandTokens_(source, values, lastColumn) {
   var fullName = values[0];
   var out = "";
   var i = 0;
@@ -551,7 +603,9 @@ function renderMessage_(sheet, row) {
   if (!text) return "";
 
   if (hasTemplateMarkup_(text)) {
-    rich = buildRichText_(expandTokens_(text, sheet, row, sheet.getLastColumn()));
+    var lastColumn = sheet.getLastColumn();
+    var values = sheet.getRange(row, 1, 1, lastColumn).getDisplayValues()[0];
+    rich = buildRichText_(expandTokens_(text, values, lastColumn));
   }
   return richToHtml_(rich);
 }

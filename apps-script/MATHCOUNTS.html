@@ -202,6 +202,8 @@
       function show(slot, key) {
         var source = strings.querySelector('[data-key="' + key + '"]');
         slot.replaceChildren(source ? source.cloneNode(true) : document.createTextNode(""));
+        // "Checking you in..." shares the slot but is not a failure.
+        slot.className = key === "loading" ? "error error--busy" : "error";
       }
 
       function normalizeCode(ch) {
@@ -261,6 +263,7 @@
 
       wire(codeBoxes, normalizeCode);
       wire(idBoxes, normalizeDigit);
+      codeBoxes[0].focus(); // the sandboxed frame ignores the autofocus attribute
 
       var gateError = document.getElementById("gate-error");
       var gateSubmit = document.getElementById("gate-submit");
@@ -288,6 +291,7 @@
         if (code.length < codeBoxes.length) { show(gateError, "code-short"); return; }
 
         gateError.replaceChildren();
+        gateError.className = "error";
         gateSubmit.disabled = true;
 
         google.script.run

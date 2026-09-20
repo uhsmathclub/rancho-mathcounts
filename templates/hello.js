@@ -20,10 +20,13 @@
   function show(slot, key) {
     var source = strings.querySelector('[data-key="' + key + '"]');
     slot.replaceChildren(source ? source.cloneNode(true) : document.createTextNode(""));
+    // "Checking you in..." shares the slot but is not a failure.
+    slot.className = key === "loading" ? "error error--busy" : "error";
   }
 
   function clear(slot) {
     slot.replaceChildren();
+    slot.className = "error";
   }
 
   /* ---------- digit groups ---------- */

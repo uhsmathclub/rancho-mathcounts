@@ -392,6 +392,7 @@ The page is a **gate, then a form.** Nothing behind the gate — including the d
 
 **Step 1 — the gate.** Today's code, and nothing else on the page.
 
+- The first box takes focus on load, so a student can start typing without aiming at anything. The public page uses the `autofocus` attribute; the Apps Script fallback calls `.focus()`, because a sandboxed frame ignores the attribute.
 - Four boxes. `--font-mono`, uppercased on input, `inputmode="text"`, `autocapitalize="characters"`, `autocomplete="off"`, `maxlength="1"` each.
 - The alphabet is Crockford base-32, so input normalizes as the reader types: `I`, `i`, `L`, `l` become `1`; `O`, `o` become `0`; hyphens are ignored. A student who reads a `0` on the whiteboard as an `O` still gets in.
 - **Nothing drawn from the spreadsheet may be in the page before the gate passes** — not the announcement, not a name, not a count, not an ID. The empty step 2 form may sit in the markup `hidden`, because an empty input box discloses nothing and keeping it in the HTML keeps the page working without JavaScript rebuilding it.
@@ -413,6 +414,7 @@ The page is a **gate, then a form.** Nothing behind the gate — including the d
 
 **Errors.** Specific, in `--danger`, beneath the relevant fieldset, announced politely, never a modal:
 
+- The in-flight state shares the error slot but is not a failure: it is `--success`, not `--danger`. Nothing has gone wrong yet.
 - Incomplete code or ID → name the field.
 - Wrong day code → say the code is wrong and where to find the right one.
 - Unknown student ID → say the ID was not found. Only someone who already passed the gate can ever see this.
@@ -531,6 +533,8 @@ Three things here are easy to get wrong and silently destructive:
 
 **Checking in twice** overwrites that student's `Dashboard` row — there is one row per student — and appends another `Log` entry. The log is the record; the dashboard is the view.
 
+**Overwriting never destroys an answer.** Before `E` and `F` are replaced, whatever they held is appended to that cell's own note, stamped with the previous check-in time. A student who said they were leaving early, and then checked in again after a coach updated their message, would otherwise silently stop being marked as leaving. `New day` clears those two notes. It does **not** clear column D's note, which is the message template.
+
 **The menu** is the only way anything runs. There are no triggers.
 
 | Item | Does |
@@ -575,6 +579,8 @@ Expansion is one left-to-right pass. Substitution happens **before** the markdow
 **What the sheet cannot hold** stays as written and is parsed when the page renders: `#` headings, `>` blockquotes, `` `code` ``, and `![images](url)`. A coach's `#` starts at `<h3>`, because the page already owns its `<h1>`.
 
 **Evaluating is a preview, not a commit.** It exists so a coach can see the result before a meeting and so check-in does less work. If a cell still holds tokens or markers when a student checks in, it is expanded on the fly and the sheet is not written to.
+
+**Expansion is one read and one write, never a loop of them.** The whole selection is read with `getDisplayValues`, expanded in memory, and written back with `setRichTextValues`. Cell-by-cell writing costs four API round trips per row and, worse, leaves one undo step per row behind — a coach who picks the wrong menu item would have to hold Ctrl+Z down. Batched, the values are a single undo and saving notes adds exactly one more.
 
 **The note is the source of truth once it exists.** A cell holding markers is a fresh edit and wins; otherwise the note is the template and the cell is the last run's output. That is what makes the whole thing idempotent — without it, the first expansion destroys the template it came from.
 
