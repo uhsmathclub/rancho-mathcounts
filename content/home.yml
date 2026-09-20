@@ -17,8 +17,7 @@ announce:
   zh: >-
     祝贺所有参加了本次激烈选拔的同学！我们很高兴迎来41位格外出色的学生加入今年的项目。
   ko: >-
-    경쟁 선발 시험에 참여한 모든 학생에 축하합니다. 올해 프로그램에 41명의 뛰어난 학생들을
-    맞이하게 되어 기쁩니다!
+    이번 치열한 선발 시험에 참가해 준 모든 학생 여러분, 축하합니다! 올해 프로그램에 41명의 뛰어난 학생들을 진심으로 환영합니다!
 
 main:
   head: Rancho MATHCOUNTS
@@ -26,7 +25,7 @@ main:
   subtext:
     en: Rancho San Joaquin Middle School presents
     zh: 兰乔圣华金中学办
-    ko: 란초 샌와킨 중학교 제공
+    ko: 란초 샌와킨 중학교의
 
   lede:
     en: >-
@@ -40,10 +39,7 @@ main:
       和 Sage High School 的教练负责辅导学生；我们致力于帮助学生备战数学竞赛，
       并在数学之路上不断成长。如有任何问题，请联系 Gastelum 老师（B6 教室）。
     ko: >-
-      MATHCOUNTS는 주간 방과 후 수학 심화 프로그램입니다. University High School과 Sage High School      
-      코치들이 이끄는 학습 커뮤니티입니다. 학생들이 수학 경시대회를
-      준비하고 수학자로 성장할 수 있도록 돕습니다. 궁금한 점이 있으시면 Liz Gastelum
-      선생님(B6 교실)께 연락해 주세요.
+      MATHCOUNTS는 매주 방과 후 수학 심화 프로그램이에요. University High School과 Sage High School의 코치들이 이끄는 학습 커뮤니티예요. 학생들이 수학 경시대회를 준비하고 수학 실력이 늘 수 있도록 도와요. 질문이 있으시면 Liz Gastelum 선생님(B6 교실)께 연락해 주세요.
 
   picture:
     src: home.jpg
@@ -54,8 +50,7 @@ main:
       zh: >-
         全体社团成员在校园户外合影；有些人手里还端着装有派的盘子。
       ko: >-
-        동아리 전체가 교내 야외에 모여 단체 사진을 찍고 있으며, 일부는 아직 파이 접시를
-        들고 있습니다.
+        동아리 학생들이 밖에 모여서 사진을 찍어요. 몇몇 학생들이 아직도 파이 접시를 들고 있어요.
 
   stats:
     - value: 41
@@ -67,18 +62,18 @@ main:
       label:
         en: Students Trying Out
         zh: 参加选拔赛的学生
-        ko: 선발 참가 학생
+        ko: 선발 시험 참가자
     - value: 28
       label:
         en: Number of Meetings
         zh: 活动场次
-        ko: 모임 횟수
+        ko: 모임 수
 
 faq:
   - question:
-      en: Can you participate in both NHD and MATHCOUNTS?
-      zh: 可以同时参加 NHD 和 MATHCOUNTS 吗？
-      ko: NHD와 MATHCOUNTS에 동시에 참여할 수 있나요?
+      en: Can you participate in both National History Day (NHD) and MATHCOUNTS?
+      zh: 可以同时参加 National History Day (NHD) 和 MATHCOUNTS 吗？
+      ko: National History Day (NHD)와 MATHCOUNTS를 동시에 할 수 있나요?
     answer:
       en: >-
         Unfortunately, we cannot accommodate students who wish to participate in
@@ -87,8 +82,7 @@ faq:
       zh: >-
         很遗憾，由于NHD 与 MATHCOUNTS 的活动时间冲突，今年无法两者兼顾，请同学们选择其一。
       ko: >-
-        아쉽게도 NHD와 MATHCOUNTS는 같은 시간에 진행되어 올해는 두 프로그램에 모두
-        참여할 수 없습니다. 둘 중 하나를 선택해 주세요.
+        아쉽게도 NHD와 MATHCOUNTS를 같은 시간에 둘 다 할 수 없어요. 둘 중에 하나만 선택해 주세요.
 
 pictures:
   - src: pie.jpg
@@ -98,7 +92,7 @@ pictures:
       zh: >-
         学生们围站在教室的桌子旁。桌上摆满了装着派的纸盘。
       ko: >-
-        학생들이 파이가 담긴 종이 접시로 가득한 교실 탁자 주위에 둘러서 있습니다.
+        학생들이 파이가 담긴 접시로 가득한 탁자 주위에 모여 있어요.
     caption:
       en: eating pie
       zh: 吃派
@@ -106,7 +100,7 @@ pictures:
     title:
       en: MATHCOUNTS isn't just math
       zh: MATHCOUNTS 不仅仅是数学
-      ko: MATHCOUNTS는 수학만이 아닙니다
+      ko: MATHCOUNTS는 수학만 하는 곳이 아니라
     date:
       en: March 12th, 2026
       zh: 2026年3月12日
@@ -120,8 +114,8 @@ pictures:
         我们关心的不只是学生在比赛中的表现，更是他们的身心健康。教练们会策划各种互动活动，
         例如在“圆周率日”（π Day）用手算出圆周率的前九位。
       ko: >-
-        저희는 대회 성적뿐 아니라 학생들의 건강과 행복도 소중히 생각합니다. 코치진은 파이
-        데이에 원주율을 손으로 아홉 자리까지 계산해 보는 등 다양한 체험 활동을 준비합니다.
+        대회 성적뿐 아니라 학생의 건강과 행복도 중요하죠. 학생들이 즐겁게 참가하도록 코치진은 다양한 활동을 준비해요. 예를 들면 원주율의 날(π Day)에는
+        학생들이 원주율을 손으로 직접 계산해 봐요.
 
   - src: state.jpeg
     alt:
@@ -131,7 +125,7 @@ pictures:
       zh: >-
         四名学生与他们的教练在竞赛背景板前手捧奖杯。
       ko: >-
-        학생 네 명과 코치가 대회 배경막 앞에서 트로피를 들고 있습니다.
+        학생 네 명과 코치가 대회에서 트로피를 들고 있어요.
     caption:
       en: first place at state
       zh: 州级比赛第一名
@@ -139,7 +133,7 @@ pictures:
     title:
       en: MATHCOUNTS is a lot of math
       zh: MATHCOUNTS 也确实包含许多数学
-      ko: MATHCOUNTS는 수학이 아주 많습니다
+      ko: MATHCOUNTS에서 수학이 정말 많죠
     date:
       en: March 21st, 2026
       zh: 2026年3月21日
@@ -152,5 +146,5 @@ pictures:
         Rancho MATHCOUNTS 历来表现出色。去年，我们在南加州 MATHCOUNTS
         州级竞赛中荣获第一名。
       ko: >-
-        Rancho MATHCOUNTS는 오랫동안 좋은 성적을 거두어 왔습니다. 지난해에는 남캘리포니아
-        MATHCOUNTS 주 대회에서 1등 차지했습니다.
+        Rancho MATHCOUNTS는 오랫동안 성과를 거두어 왔어요! 작년에 남부 캘리포니아
+        MATHCOUNTS 주 대회에서 1등을 차지했어요.
