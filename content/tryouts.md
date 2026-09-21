@@ -26,5 +26,5 @@ Registration for next year's tryouts will open in August 2027.
 
 <!--lang:ko-->
 
-2026–27학년도 MATHCOUNTS 선발은 2026년 9월 8일과 9일에 진행되었습니다. 다음 학년도 선발
-등록은 2027년 8월에 시작됩니다.
+2026–27학년도 MATHCOUNTS 선발은 2026년 9월 8일과 9일에 진행되었습니다.
+다음 학년도 선발 등록은 2027년 8월에 시작됩니다.

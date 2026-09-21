@@ -39,7 +39,9 @@ main:
       和 Sage High School 的教练负责辅导学生；我们致力于帮助学生备战数学竞赛，
       并在数学之路上不断成长。如有任何问题，请联系 Gastelum 老师（B6 教室）。
     ko: >-
-      MATHCOUNTS는 매주 방과 후 수학 심화 프로그램이에요. University High School과 Sage High School의 코치들이 이끄는 학습 커뮤니티고 학생이 수학 경시대회를 준비하고 수학 실력이 늘 수 있도록 도와요. 질문이 있으시면 Gastelum 선생님(B6 교실)께 연락해 주세요.
+      MATHCOUNTS는 매주 방과 후 수학 심화 프로그램이에요. University
+      High School과 Sage High School의 코치들이 이끄는 학습 커뮤니티고 학생이 수학 경시대회를 준비하고 수학 실력이 늘 수 있도록 도와요.
+      질문이 있으시면 Gastelum 선생님(B6 교실)께 연락해 주세요.
 
   picture:
     src: home.jpg
@@ -82,7 +84,8 @@ faq:
       zh: >-
         很遗憾，由于NHD 与 MATHCOUNTS 的活动时间冲突，今年无法两者兼顾，请同学们选择其一。
       ko: >-
-        아쉽게도 NHD와 MATHCOUNTS를 같은 시간에 둘 다 할 수 없어요. 둘 중에 하나만 선택해 주세요.
+        아쉽게도 NHD와 MATHCOUNTS를 같은 시간에 둘 다 할 수 없어요.
+        둘 중에 하나만 선택해 주세요.
 
 pictures:
   - src: pie.jpg
@@ -114,8 +117,9 @@ pictures:
         我们关心的不只是学生在比赛中的表现，更是他们的身心健康。教练们会策划各种互动活动，
         例如在“圆周率日”（π Day）用手算出圆周率的前九位。
       ko: >-
-        대회 성적뿐 아니라 학생의 건강과 행복도 중요하죠. 학생들이 즐겁게 참가하도록 코치진은 다양한 활동을 준비해요. 예를 들면 원주율의 날(π Day)에는
-        학생들이 원주율을 손으로 직접 계산해 봐요.
+        대회 성적뿐 아니라 학생의 건강과 행복도 중요하죠. 학생들이
+        즐겁게 참가하도록 코치진은 다양한 활동을 준비해요.
+        예를 들면 원주율의 날(π Day)에는 학생들이 원주율을 손으로 직접 계산해 봐요.
 
   - src: state.jpeg
     alt:
@@ -133,7 +137,7 @@ pictures:
     title:
       en: MATHCOUNTS is a lot of math
       zh: MATHCOUNTS 也确实包含许多数学
-      ko: MATHCOUNTS는 수학이 정말 많네요
+      ko: MATHCOUNTS는 수학이 정말 많네요...
     date:
       en: March 21st, 2026
       zh: 2026年3月21日
@@ -146,5 +150,5 @@ pictures:
         Rancho MATHCOUNTS 历来表现出色。去年，我们在南加州 MATHCOUNTS
         州级竞赛中荣获第一名。
       ko: >-
-        Rancho MATHCOUNTS는 오랫동안 성과를 거두어 왔어요! 작년에 남부 캘리포니아
-        MATHCOUNTS 주 대회에서 1등을 차지했어요.
+        Rancho MATHCOUNTS는 오랫동안 성과를 거두어 왔어요!
+        작년에 남부 캘리포니아 MATHCOUNTS 주 대회에서 1등을 차지했어요.
