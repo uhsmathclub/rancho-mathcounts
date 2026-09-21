@@ -39,7 +39,7 @@ main:
       和 Sage High School 的教练负责辅导学生；我们致力于帮助学生备战数学竞赛，
       并在数学之路上不断成长。如有任何问题，请联系 Gastelum 老师（B6 教室）。
     ko: >-
-      MATHCOUNTS는 매주 방과 후 수학 심화 프로그램이에요. University High School과 Sage High School의 코치들이 이끄는 학습 커뮤니티예요. 학생들이 수학 경시대회를 준비하고 수학 실력이 늘 수 있도록 도와요. 질문이 있으시면 Gastelum 선생님(B6 교실)께 연락해 주세요.
+      MATHCOUNTS는 매주 방과 후 수학 심화 프로그램이에요. University High School과 Sage High School의 코치들이 이끄는 학습 커뮤니티고 학생이 수학 경시대회를 준비하고 수학 실력이 늘 수 있도록 도와요. 질문이 있으시면 Liz Gastelum 선생님(B6 교실)께 연락해 주세요.
 
   picture:
     src: home.jpg
@@ -133,7 +133,7 @@ pictures:
     title:
       en: MATHCOUNTS is a lot of math
       zh: MATHCOUNTS 也确实包含许多数学
-      ko: MATHCOUNTS에서 수학이 정말 많죠
+      ko: MATHCOUNTS에서 수학이 정말 많네요
     date:
       en: March 21st, 2026
       zh: 2026年3月21日
