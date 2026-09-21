@@ -50,7 +50,7 @@ main:
       zh: >-
         全体社团成员在校园户外合影；有些人手里还端着装有派的盘子。
       ko: >-
-        동아리 학생들이 밖에 모여서 사진을 찍어요. 몇몇 학생들은 아직 파이 접시를 들고 있어요.
+        동아리 학생들이 밖에 모여서 사진을 찍어요. 몇몇 학생들이 파이 접시를 들고 있어요.
 
   stats:
     - value: 41
@@ -133,7 +133,7 @@ pictures:
     title:
       en: MATHCOUNTS is a lot of math
       zh: MATHCOUNTS 也确实包含许多数学
-      ko: MATHCOUNTS에서 수학이 정말 많네요
+      ko: MATHCOUNTS는 수학이 정말 많네요
     date:
       en: March 21st, 2026
       zh: 2026年3月21日
