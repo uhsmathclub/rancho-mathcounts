@@ -22,6 +22,8 @@ Art of Problem Solving ([AoPS](https://artofproblemsolving.com/?srsltid=AfmBOoqL
 
 ## Practice
 
+[Math with Ms. Lin](https://mathteamnyc.weebly.com/mathcounts.html) \- Tons of past practice tests.
+
 [For The Win\! (FTW)](https://artofproblemsolving.com/ftw) \- AoPS’s MATHCOUNTS Countdown-style practice. Only really helpful if you want to get fast, or want to do well in the Countdown round.
 
 [Alcumus](https://artofproblemsolving.com/alcumus) \- If you just want to grind problems, this system has tens of thousands of problems, from middle school competition to high school competition.
