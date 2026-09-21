@@ -345,10 +345,12 @@ function restoreTemplateFromNote() {
   var cells = sheet.getRange(rows.top, MESSAGE_COL, count, 1);
   var notes = cells.getNotes();
   var values = cells.getValues();
+  var ids = sheet.getRange(rows.top, 2, count, 1).getDisplayValues();
 
   var out = [];
   for (var i = 0; i < count; i++) {
-    out.push([notes[i][0] ? notes[i][0] : values[i][0]]);
+    var keep = !digitsOnly_(ids[i][0]) || !notes[i][0];
+    out.push([keep ? values[i][0] : notes[i][0]]);
   }
   cells.setValues(out); // one write, so one undo
 }
@@ -382,6 +384,22 @@ function expandSelection_(saveNote) {
     var current = rich[i][0] || SpreadsheetApp.newRichTextValue().setText("").build();
     var text = current.getText();
     var note = notes[i][0];
+
+    // Rows with no ID are spacers that group students visually. They have
+    // no name to substitute, so leave them exactly as they are.
+    if (!digitsOnly_(table[i][1])) {
+      outValues.push([current]);
+      outNotes.push([note]);
+      continue;
+    }
+
+    // Rows with no ID are spacers that group students visually. They have
+    // no name to substitute, so leave them exactly as they are.
+    if (!digitsOnly_(table[i][1])) {
+      outValues.push([current]);
+      outNotes.push([note]);
+      continue;
+    }
 
     // A cell that still has markers is a fresh edit and wins over the note.
     // Otherwise the note is the template and the cell is last run's output.

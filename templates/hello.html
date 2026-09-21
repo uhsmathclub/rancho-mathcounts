@@ -23,7 +23,7 @@
 
     <p class="error" id="gate-error" role="status" aria-live="polite"></p>
 
-    <button class="btn" type="submit" id="gate-submit" data-zh="继续" data-ko="제출">Continue</button>
+    <button class="btn" type="submit" id="gate-submit" data-zh="继续" data-ko="계속">Continue</button>
   </form>
 
   {# ---------- step 2: check in ---------- #}
@@ -43,7 +43,7 @@
             autocorrect="off" spellcheck="false" maxlength="1"
             aria-label="Student ID, digit {{ n }} of 9"
             data-zh-aria-label="学号第 {{ n }} 位，共 9 位"
-            data-ko-aria-label="학번, 9숫자 중 {{ n }}번째">
+            data-ko-aria-label="학번, 9자리 중 {{ n }}번째">
           {%- endfor %}
         </span>
         {%- endfor %}
@@ -64,10 +64,14 @@
     </div>
 
     <div class="leaving">
-      <input type="checkbox" id="leaving">
-      <label for="leaving" data-zh="需要提前离开吗？" data-ko="일찍 가요?">Leaving early?</label>
-      <label for="leaving-time" class="visually-hidden" data-zh="几点？" data-ko="몇 시에 가요?">What time?</label>
-      <input type="time" id="leaving-time" hidden>
+      <span class="leaving__ask">
+        <input type="checkbox" id="leaving">
+        <label for="leaving" data-zh="需要提前离开吗？" data-ko="일찍 가요?">Leaving early?</label>
+      </span>
+      <span class="leaving__when" id="leaving-when" hidden>
+        <label for="leaving-time" data-zh="几点？" data-ko="몇 시에 가요?">What time?</label>
+        <input type="time" id="leaving-time">
+      </span>
     </div>
 
     <p class="error" id="checkin-error" role="status" aria-live="polite"></p>
@@ -93,11 +97,13 @@
     <span data-key="code-short" data-zh="请输入今日代码的全部四位字符。"
       data-ko="오늘의 코드 네 글자를 모두 입력하세요.">Enter all four characters of today's code.</span>
     <span data-key="code-wrong" data-zh="今日代码不正确。请查看白板或询问教练。"
-      data-ko="오늘의 코드가 아니에요. 칠판을 확인하거나 코치에게 물어보세요">That's not today's code. Check the board or ask a coach.</span>
+      data-ko="오늘의 코드가 아니에요. 칠판을 확인하거나 코치에게 물어보세요.">That's not today's code. Check the board or ask a coach.</span>
+    <span data-key="time-missing" data-zh="请填写你离开的时间。"
+      data-ko="가는 시간을 입력하세요.">Enter the time you're leaving.</span>
     <span data-key="id-short" data-zh="请输入完整的九位学号。"
       data-ko="학번 아홉 자리를 모두 입력하세요.">Enter all nine digits of your student ID.</span>
     <span data-key="id-unknown" data-zh="未找到该学号。"
-      data-ko="그 학번을 찾을 수 없어요.">We couldn't find that student ID.</span>
+      data-ko="해당 학번을 찾을 수 없어요.">We couldn't find that student ID.</span>
     <span data-key="offline" data-zh="目前无法连接签到系统。请告知教练。"
       data-ko="지금은 체크인에 연결할 수 없어요. 코치에게 알려 주세요.">Check-in isn't reachable right now. Tell a coach.</span>
     <span data-key="loading" data-zh="正在签到……"

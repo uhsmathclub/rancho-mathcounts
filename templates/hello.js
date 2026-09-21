@@ -147,9 +147,12 @@
   var savedHint = document.getElementById("saved-hint");
   var leaving = document.getElementById("leaving");
   var leavingTime = document.getElementById("leaving-time");
+  var leavingWhen = document.getElementById("leaving-when");
 
   leaving.addEventListener("change", function () {
-    leavingTime.hidden = !leaving.checked;
+    leavingWhen.hidden = !leaving.checked;
+    leavingTime.required = leaving.checked;
+    if (!leaving.checked) leavingTime.value = "";
     if (leaving.checked) leavingTime.focus();
   });
 
@@ -186,6 +189,12 @@
 
     if (id.length < idBoxes.length) {
       show(checkinError, "id-short");
+      return;
+    }
+
+    if (leaving.checked && !leavingTime.value) {
+      show(checkinError, "time-missing");
+      leavingTime.focus();
       return;
     }
 

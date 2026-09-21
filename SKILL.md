@@ -196,6 +196,8 @@ A 4px scale, used without exception.
 - **One column.** The site is a single centered column at `max-width: 58rem` with a hard left alignment inside it. There is no grid system, no sidebar, and no multi-column text.
 - **The column is wider than the measure, on purpose.** Running text stays capped near 66 characters; the space left over is where the photographs sit. A page whose text and images are both the full column width looks like a document, not a layout.
 - **Page gutter is 16px minimum** at all viewport widths. No horizontal page scroll, ever.
+- **A floated figure sets the line length; the measure must step aside.** Keeping `max-width` on a paragraph while a float eats the first 46% of it traps the text between the picture and a cap that does not know the picture is there — on the left-floated side it collapses into a column a few words wide. Drop the measure wherever the float is active and restore it below the breakpoint.
+- **The text starts below the top of the photograph.** The heading carries a top margin so the picture leads the section; the float begins at the section padding and the words come in under it.
 - **Photographs float beside the text and alternate sides** down the page — first one right, next one left. They take 46% of the column with a 2.5rem gutter against the text. The section is a `flow-root` so the float is contained without a clearfix. Below 48rem they unfloat to full width, because a column that narrow cannot hold readable text beside a picture.
 - **Full-bleed exception:** the hero gold line may break out to the full viewport width. Nothing else may.
 - **The stats row** is the one place a horizontal arrangement is allowed: three items, flex, wrapping to a vertical stack under 40rem.
@@ -239,7 +241,7 @@ Anything beyond these four is decoration this site does not need.
 Photos are the emotional content of the home page and must be treated as the artwork they are, not as stock filler.
 
 - Full-bleed or full-column width. Never in a rounded card, never with a shadow.
-- A `1px` navy hairline on all four sides in light mode; none in dark mode.
+- A `1px` navy hairline on all four sides in light mode; none in dark mode. **The border belongs to the `<figure>`, not the `<img>`.** On the image it forces the caption to be inset by a pixel to clear it, and in dark mode — where the border goes transparent but keeps its width — that pixel shows up as a seam along the edge of the plate. Give `<picture>` `display: block` too, or its inline box leaves a descender gap under the photograph.
 - The caption sits **inside** the photograph, along the bottom edge, on a half-opaque navy plate with paper-coloured text. Both colours are fixed rather than themed: the plate has to stay readable over an unknown image in either mode. It is still a real `<figcaption>`, translated with the rest of the page.
 - Always `loading="lazy"` except the hero image, and always explicit `width`/`height` to reserve space.
 - Serve modern formats with fallbacks and real `srcset` widths. Never ship HEIC to a browser.
@@ -404,13 +406,16 @@ The page is a **gate, then a form.** Nothing behind the gate — including the d
 - The **day announcement** from `Dashboard!C1` sits at the top. This is the only place on the site where it appears.
 - **Student ID:** nine boxes. `--font-mono`, `inputmode="numeric"`, `pattern="[0-9]*"`, `maxlength="1"` each, grouped 3–3–3 with a wider gap between groups so the eye can track position. Digits are visible, not masked.
 - **Message to your coaches:** optional `<textarea>`, auto-growing, no character counter.
-- **Leaving early:** a checkbox that reveals a time field. That field is `hidden`, not `visibility: hidden` — it must leave the tab order when unchecked.
+- **Leaving early:** a checkbox that reveals a labelled time field. The label is visible, not screen-reader-only — these are twelve-year-olds, and a bare time box next to a checkbox is a guess. Label and field are wrapped together and hidden together with `hidden`, not `visibility: hidden`, so they leave the tab order when unchecked.
+- **Ticking the box makes the time required.** Unticking it clears the value, so an abandoned half-answer cannot be submitted. The form is `novalidate`, so this is checked in the submit handler and reported through the same error slot as everything else.
 - **Behavior that is not optional,** on both digit groups: typing advances focus; Backspace on an empty box moves back and clears; arrow keys move between boxes; pasting a whole code or a whole nine-digit ID into any box distributes across all of them; Enter submits from any box.
 - **Accessibility:** each group is a `<fieldset>` with a visible `<legend>`. Each box has an `aria-label` naming its position. An `aria-live="polite"` region announces errors. Keyboard-only operation, no traps.
 - **Saved ID:** on success the ID goes to `localStorage`, and on return step 2's boxes prefill — but the student still passes the gate first. A `--text-xs` line offers to clear it, so a shared device can forget a student in one click.
 - **Submit** is a real `<button type="submit">` inside a real `<form>`. Gold fill, navy text, square, full width under 30rem.
 
-**Step 3 — result.** Replaces step 2. Greeting in display serif at `--text-2xl`, the student's personal message beneath in prose styling, a `--line-gold` above it. The greeting is the confirmation; do not add a second line restating that the check-in worked. Focus moves to the greeting heading so screen reader users are not stranded.
+**Step 3 — result.** Replaces step 2. Greeting in display serif at `--text-2xl`, the student's personal message beneath in prose styling, a `--line-gold` above it. The greeting is the confirmation; do not add a second line restating that the check-in worked.
+
+Most students have no personal message, so **the greeting has to look finished on its own.** It carries no trailing margin, and the rule below it brings its own spacing only when there is something to separate. A heading followed by a screen of empty space reads as a page that failed to load the rest of itself — and the fix is to remove the space, never to fill it with a sentence. Focus moves to the greeting heading so screen reader users are not stranded.
 
 **Errors.** Specific, in `--danger`, beneath the relevant fieldset, announced politely, never a modal:
 
@@ -445,6 +450,7 @@ Non-negotiable, and cheap at this scale.
 - **Touch targets** are at least 44×44px, including each check-in digit box and each language control.
 - **`prefers-reduced-motion: reduce`** disables the loading animation and all transitions.
 - **`lang` is always correct** on `<html>` and on each Mechanism B block. Mislabeled language makes a screen reader unintelligible.
+- **Language-conditional typography matches on an element's own language, never on an ancestor's.** `p:lang(zh)`, not `:lang(zh) p`. The second form catches every paragraph on the page once `<html>` is switched to Chinese, including English text that is meant to stay English. A page that is English only — the resources list — carries `lang="en"` on its article and gets the Latin stacks back through a `:lang(en)` rule, because a CJK face sets an apostrophe full-width and the text comes out gap-toothed.
 - **The site works without JavaScript** except for the language switch and check-in. English content, navigation, the FAQ, and the resources list must all render and function with JS off.
 - **Never `user-scalable=no`.** The viewport meta allows zoom.
 - **Declare `color-scheme`** on `:root`. Without it the browser paints native controls light whatever the page does, and the time picker's clock glyph turns into a dark smudge on the navy canvas. Chrome needs `::-webkit-calendar-picker-indicator { filter: invert(1) }` on top, because that glyph is a bitmap.
@@ -524,6 +530,8 @@ The spreadsheet is the database. Its shape is fixed, and the code must not assum
 Names in `Dashboard!A` take the form `Preferred (Legal) Last`, collapsing to `First Last` when the preferred and legal names match. Anything greeting a student must handle both.
 
 Three things here are easy to get wrong and silently destructive:
+
+- **Rows with a blank ID are spacers** that group students visually. They have no name to substitute, so the template expander leaves them untouched rather than writing an empty greeting into them.
 
 - **Student rows start at row 3.** The ID lookup scans `B3:B`, never `B1:B`, or it can match the day code sitting in `B1`.
 - **`Log!B` must hold a real `Date`, not a formatted string.** The attendance checkboxes are

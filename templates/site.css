@@ -83,11 +83,22 @@
   --font-body: "Apple SD Gothic Neo", Pretendard, "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
 }
 
-:lang(zh) p, :lang(ko) p,
-:lang(zh) li, :lang(ko) li { line-height: 1.85; }
+/* Restored for any subtree explicitly marked English. The resources page
+   is English only, so it keeps Latin fonts and Latin punctuation metrics
+   even while the navigation is switched to Chinese or Korean - a CJK face
+   renders an apostrophe wide and the text looks gap-toothed. */
+:lang(en) {
+  --font-display: Georgia, "Noto Serif", "Liberation Serif", "Times New Roman", serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
 
-:lang(zh) em, :lang(zh) i, :lang(zh) cite,
-:lang(ko) em, :lang(ko) i, :lang(ko) cite {
+/* These match on an element's own language, not on an ancestor's, so that
+   English text inside a Chinese page keeps English typography. */
+p:lang(zh), p:lang(ko),
+li:lang(zh), li:lang(ko) { line-height: 1.85; }
+
+em:lang(zh), i:lang(zh), cite:lang(zh),
+em:lang(ko), i:lang(ko), cite:lang(ko) {
   font-style: normal;
   font-weight: 700;
 }
@@ -116,8 +127,8 @@ h1, h2, h3 {
   margin: 0;
 }
 
-:lang(zh) h1, :lang(zh) h2, :lang(zh) h3,
-:lang(ko) h1, :lang(ko) h2, :lang(ko) h3 { letter-spacing: 0; }
+h1:lang(zh), h2:lang(zh), h3:lang(zh),
+h1:lang(ko), h2:lang(ko), h3:lang(ko) { letter-spacing: 0; }
 
 p { text-wrap: pretty; }
 
@@ -327,7 +338,12 @@ a { color: inherit; }
   }
 }
 
-.essay h2 { font-size: var(--text-xl); margin-bottom: .25rem; }
+/* Start the text below the top of the photograph, so the picture leads. */
+.essay h2 { font-size: var(--text-xl); margin-top: 2rem; margin-bottom: .25rem; }
+
+@media (max-width: 48rem) {
+  .essay h2 { margin-top: 0; }
+}
 
 .essay__date {
   font-size: var(--text-sm);
@@ -337,13 +353,34 @@ a { color: inherit; }
 
 .essay p { max-width: var(--measure); }
 
+/* While a figure is floated, the float sets the line length. Keeping the
+   measure on top of it would trap the text between the picture and a cap
+   that does not know the picture is there. */
+@media (min-width: 48rem) {
+  .essay p { max-width: none; }
+}
+
+/* While a figure is floated, the float sets the line length. Keeping the
+   measure on top of it would trap the text between the picture and a cap
+   that does not know the picture is there. */
+@media (min-width: 48rem) {
+  .essay p { max-width: none; }
+}
+
 figure { margin: 0 0 2rem; }
 
-figure img { border: 1px solid var(--rule-strong); }
+figure {
+  border: 1px solid var(--rule-strong);
+  line-height: 0; /* no inline descender gap under the picture */
+}
+
+figure picture { display: block; }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) figure img { border-color: transparent; }
+  :root:not([data-theme="light"]) figure { border-color: transparent; }
 }
+
+:root[data-theme="dark"] figure { border-color: transparent; }
 
 /* The caption sits inside the photograph, on a half-opaque navy field.
    Both colours are fixed: the plate has to work over an unknown image in
@@ -352,10 +389,9 @@ figure img { border: 1px solid var(--rule-strong); }
 
 .essay figcaption {
   position: absolute;
-  left: 1px;
-  right: 1px;
-  bottom: 1px;
+  inset: auto 0 0;
   margin: 0;
+  line-height: 1.4;
   padding: .5rem .875rem .625rem;
   background: rgba(19, 39, 73, .65);
   color: #fbf7ef;
@@ -450,9 +486,13 @@ figure img { border: 1px solid var(--rule-strong); }
 }
 
 /* ---------- check-in ---------- */
-.checkin { padding-block: 3rem 5rem; max-width: var(--measure); }
+.checkin { padding-block: 3rem 2.5rem; max-width: var(--measure); }
 
 .checkin h1 { font-size: var(--text-2xl); margin-bottom: 1.5rem; }
+
+/* The greeting may be the only thing on the page, so it carries no trailing
+   margin; the rule below it supplies its own spacing when there is one. */
+#result h1 { margin-bottom: 0; }
 
 /* Focus moves here so screen readers follow the step change. These headings
    are never reachable by Tab, so the ring would only ever confuse. */
@@ -511,9 +551,16 @@ figure img { border: 1px solid var(--rule-strong); }
 .checkin .leaving {
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: .5rem 1.25rem;
   flex-wrap: wrap;
   margin-bottom: 2rem;
+}
+
+.leaving__ask,
+.leaving__when {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
 }
 .checkin .leaving label { margin: 0; }
 .checkin .leaving input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: var(--gold); }
