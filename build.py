@@ -108,6 +108,78 @@ def picture(node: dict, eager: bool = False) -> Markup:
 
 
 # --------------------------------------------------------------------------
+# check-in parity
+# --------------------------------------------------------------------------
+
+# templates/hello.html and apps-script/MATHCOUNTS.html are two hand-written
+# copies of one screen, and they have drifted apart more than once: a string
+# edited in one file, a message added to the other, a script left calling a
+# key that no longer exists. The build refuses to ship a divergence rather
+# than letting it surface in front of a room of students.
+
+_SPAN = re.compile(r'<span\b([^>]*\bdata-key="[^"]+"[^>]*)>([^<]*)</span>', re.S)
+_SHOW = re.compile(r'show\(\s*\w+\s*,\s*"([^"]+)"\s*\)')
+
+
+def _attr(attrs: str, name: str) -> str:
+    found = re.search(name + r'="([^"]*)"', attrs)
+    return found.group(1) if found else ""
+
+
+def _message_bank(text: str) -> dict:
+    bank = {}
+    for match in _SPAN.finditer(text):
+        attrs, english = match.group(1), " ".join(match.group(2).split())
+        bank[_attr(attrs, "data-key")] = (
+            english, _attr(attrs, "data-zh"), _attr(attrs, "data-ko")
+        )
+    return bank
+
+
+def check_checkin_parity() -> None:
+    pages = {
+        "templates/hello.html": TEMPLATES / "hello.html",
+        "apps-script/MATHCOUNTS.html": APPS_SCRIPT / "MATHCOUNTS.html",
+    }
+    banks = {name: _message_bank(path.read_text(encoding="utf-8"))
+             for name, path in pages.items()}
+
+    problems = []
+    names = list(banks)
+    left, right = banks[names[0]], banks[names[1]]
+
+    for key in sorted(set(left) - set(right)):
+        problems.append(f"{key!r} is in {names[0]} but not {names[1]}")
+    for key in sorted(set(right) - set(left)):
+        problems.append(f"{key!r} is in {names[1]} but not {names[0]}")
+
+    for key in sorted(set(left) & set(right)):
+        for lang, index in (("en", 0), ("zh", 1), ("ko", 2)):
+            if left[key][index] != right[key][index]:
+                problems.append(
+                    f"{key!r} {lang} differs:\n"
+                    f"      {names[0]}: {left[key][index]}\n"
+                    f"      {names[1]}: {right[key][index]}"
+                )
+
+    # A script asking for a key that no page defines shows an empty message.
+    for name, path in (("templates/hello.js", TEMPLATES / "hello.js"),
+                       ("apps-script/MATHCOUNTS.html", APPS_SCRIPT / "MATHCOUNTS.html")):
+        source = path.read_text(encoding="utf-8")
+        bank = banks["templates/hello.js" == name and "templates/hello.html" or name]
+        for key in sorted(set(_SHOW.findall(source)) - set(bank)):
+            problems.append(f"{name} shows {key!r}, which has no string to show")
+
+    if problems:
+        raise SystemExit(
+            "check-in parity failed:\n  - " + "\n  - ".join(problems) +
+            "\n\nThese two files are maintained by hand. Fix both."
+        )
+
+    print(f"check-in: {len(left)} messages, both pages agree")
+
+
+# --------------------------------------------------------------------------
 # content loading
 # --------------------------------------------------------------------------
 
@@ -223,6 +295,8 @@ def main() -> int:
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
+
+    check_checkin_parity()
 
     site = load_yaml("site.yml")
     home = load_yaml("home.yml")

@@ -81,6 +81,12 @@
 :lang(ko) {
   --font-display: "Apple SD Gothic Neo", Pretendard, "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
   --font-body: "Apple SD Gothic Neo", Pretendard, "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
+
+  /* Hangul breaks at any syllable by default, so a word gets cut in half at
+     the end of a line. keep-all breaks between words instead. Chinese is
+     deliberately left alone: Han text is supposed to break anywhere, and
+     keep-all there would push long runs past the edge of the column. */
+  word-break: keep-all;
 }
 
 /* Restored for any subtree explicitly marked English. The resources page
@@ -90,6 +96,7 @@
 :lang(en) {
   --font-display: Georgia, "Noto Serif", "Liberation Serif", "Times New Roman", serif;
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  word-break: normal; /* keep-all inherits from a Korean <html>; undo it here */
 }
 
 /* These match on an element's own language, not on an ancestor's, so that
@@ -562,6 +569,11 @@ figure picture { display: block; }
   align-items: center;
   gap: .5rem;
 }
+
+/* An author `display` beats the UA rule behind the hidden attribute, so
+   without this the time field is never actually hidden. Any rule that sets
+   display on an element that also toggles [hidden] needs this pair. */
+.leaving__when[hidden] { display: none; }
 .checkin .leaving label { margin: 0; }
 .checkin .leaving input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: var(--gold); }
 .checkin .leaving input[type="time"] {
@@ -624,8 +636,7 @@ figure picture { display: block; }
 
 /* ---------- footer ---------- */
 .footer {
-  border-top: 1px solid var(--rule);
-  padding-block: 2rem 3rem;
+  padding-block: 3rem;
   font-size: var(--text-sm);
   color: var(--ink-muted);
 }

@@ -167,6 +167,7 @@ Body copy is 18px. This site is read by twelve-year-olds and by parents on phone
 - **Measure is capped at 66 characters** (`max-width: 38rem`) for body copy. Never let a paragraph span a wide viewport.
 - **Line height:** `1.65` for Latin body, `1.15` for display, `1.85` for CJK body. CJK needs the extra leading — the glyphs are dense and square.
 - **Letter-spacing:** `-0.02em` on display sizes, `0` on body, and **never** on CJK text at any size. Letter-spaced CJK looks broken.
+- **Korean sets `word-break: keep-all`.** Hangul breaks at any syllable by default, so a word gets cut in half at the end of a line. `keep-all` breaks between words instead, and `overflow-wrap: break-word` keeps a very long token from overflowing. **Chinese is deliberately excluded** — Han text is supposed to break anywhere, and `keep-all` there pushes long runs past the edge of the column. Any subtree marked `lang="en"` resets `word-break` to `normal`, since the property inherits down from a Korean `<html>`.
 - **No italics on CJK.** Browsers synthesize an oblique that is genuinely wrong. Force `font-style: normal` under `:lang(zh)` and `:lang(ko)` for `em`, `i`, and `cite`, and substitute weight or a gold underline for emphasis.
 - **No justification.** Ragged right everywhere. Use `text-wrap: pretty` on paragraphs and `text-wrap: balance` on headings.
 - **Numerals** use the display serif at `--text-3xl` for statistics, and mono with `font-variant-numeric: tabular-nums` for IDs and codes.
@@ -429,7 +430,11 @@ Most students have no personal message, so **the greeting has to look finished o
 
 ### Footer
 
-One line: the advisor's name, email, and room. Hairline rule above, `--text-sm`, `--ink-muted`, translated. Nothing else — no social links, no copyright, no "built with."
+One line: the advisor's name, email, and room. `--text-sm`, `--ink-muted`, translated. Nothing else — no social links, no copyright, no "built with."
+
+No rule above it. The last section already ends on a hairline, and a second one a few pixels below reads as a mistake rather than a boundary.
+
+**The footer does not ask a question.** It sits directly under `Frequently Asked Questions`, so opening with "Questions?" is a stutter. State the contact and stop.
 
 ### 404
 
@@ -453,6 +458,7 @@ Non-negotiable, and cheap at this scale.
 - **Language-conditional typography matches on an element's own language, never on an ancestor's.** `p:lang(zh)`, not `:lang(zh) p`. The second form catches every paragraph on the page once `<html>` is switched to Chinese, including English text that is meant to stay English. A page that is English only — the resources list — carries `lang="en"` on its article and gets the Latin stacks back through a `:lang(en)` rule, because a CJK face sets an apostrophe full-width and the text comes out gap-toothed.
 - **The site works without JavaScript** except for the language switch and check-in. English content, navigation, the FAQ, and the resources list must all render and function with JS off.
 - **Never `user-scalable=no`.** The viewport meta allows zoom.
+- **An element that toggles `[hidden]` must not be given a `display` by an author rule** without a matching `[hidden] { display: none }`. The hidden attribute is only a UA-stylesheet `display: none`, so any author `display` silently beats it and the element never hides. This has bitten this codebase once already.
 - **Declare `color-scheme`** on `:root`. Without it the browser paints native controls light whatever the page does, and the time picker's clock glyph turns into a dark smudge on the navy canvas. Chrome needs `::-webkit-calendar-picker-indicator { filter: invert(1) }` on top, because that glyph is a bitmap.
 
 * * *
@@ -591,6 +597,14 @@ Expansion is one left-to-right pass. Substitution happens **before** the markdow
 **Expansion is one read and one write, never a loop of them.** The whole selection is read with `getDisplayValues`, expanded in memory, and written back with `setRichTextValues`. Cell-by-cell writing costs four API round trips per row and, worse, leaves one undo step per row behind — a coach who picks the wrong menu item would have to hold Ctrl+Z down. Batched, the values are a single undo and saving notes adds exactly one more.
 
 **The note is the source of truth once it exists.** A cell holding markers is a fresh edit and wins; otherwise the note is the template and the cell is the last run's output. That is what makes the whole thing idempotent — without it, the first expansion destroys the template it came from.
+
+### Two Copies of One Screen
+
+`templates/hello.html` plus `templates/hello.js`, and `apps-script/MATHCOUNTS.html`, are the same screen written twice — once over `fetch` and once over `google.script.run`. They have drifted apart more than once: a string edited on one side, a message added to the other, a script left calling a key that no longer exists and rendering an empty error.
+
+**The build checks them and refuses to continue on a divergence.** It compares every `data-key` message across both pages in all three languages, and it checks that every key either script asks for actually exists. A mismatch fails the build with the specific keys named. This is not a style rule; it is the only thing standing between a one-sided edit and a blank error message in front of a room of students.
+
+`Stylesheet.html` and `Script.html` in that folder are **generated** from `templates/site.css` and `templates/site.js` on every build. Editing them does nothing: the next build overwrites the file and the change is gone with no warning. Edit the templates.
 
 ### Google Apps Script Fallback
 
