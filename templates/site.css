@@ -81,7 +81,7 @@
 :lang(ko) {
   --font-display: "Apple SD Gothic Neo", Pretendard, "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
   --font-body: "Apple SD Gothic Neo", Pretendard, "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
-  word-break: keep-all;
+  word-break: keep-all; /* prevents cutting off the middle of words */
 }
 
 /* Restored for any subtree explicitly marked English. The resources page
@@ -405,7 +405,6 @@ figure picture { display: block; }
 .faq h2 { font-size: var(--text-xl); margin-bottom: 1.5rem; }
 
 .faq details { border-top: 1px solid var(--rule); }
-.faq details:last-of-type { border-bottom: 1px solid var(--rule); }
 
 .faq summary {
   cursor: pointer;
