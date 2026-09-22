@@ -400,7 +400,7 @@ figure picture { display: block; }
 }
 
 /* ---------- FAQ ---------- */
-.faq { padding-block: 3rem; border-top: 1px solid var(--rule); }
+.faq { padding-block: 3rem 1rem; border-top: 1px solid var(--rule); }
 
 .faq h2 { font-size: var(--text-xl); margin-bottom: 1.5rem; }
 
