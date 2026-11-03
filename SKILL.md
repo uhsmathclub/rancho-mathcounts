@@ -619,14 +619,15 @@ It can also ask the room something. A coach writes an `<input>` tag where the qu
 | `text`, `textarea` | `minlength`, `maxlength` (capped at 2000), `placeholder`, `value` | the text |
 | `number` | `min`, `max`, `step` (default `1`, or `any`), `placeholder`, `value` | a number |
 | `color` | `value` (`#rrggbb`) | the hex code, and the cell turns that colour |
-| `radio`, `select` (or `dropdown`) | `options="'Yes', 'No', *'Maybe'"` | the option's text |
+| `radio`, `select` (or `dropdown`) | `options="'Yes', 'No', *'Maybe', Other"` | the option's text, or what was typed under Other |
 | `rating` | `min` (default 1), `max` (default 5), `data-low`, `data-high` | a number |
 | `checkbox` | `option-k="Wed" option-l="Thu" option-l-checked`, or `data-col` + `checked` for one box | `TRUE`/`FALSE`, one column per option, as real checkboxes |
 
-Every type takes `data-label` (the question; it becomes the `<label>` or `<legend>`), `data-col` (the column, G or later; `K` and `\K` both work), `required`, and `data-only="123456789|987654321"` (only those IDs see it). In `options`, quotes are optional, `*` marks the default, and a backslash escapes the next character: `'Don\'t know'`, `Red\, white`. Write `\<input` to show a tag as text.
+Every type takes `data-label` (the question; it becomes the `<label>` or `<legend>`), `data-col` (the column, G or later; `K` and `\K` both work), `required`, and `data-only="123456789|987654321"` (only those IDs see it). In `options`, quotes are optional, `*` marks the default, and a backslash escapes the next character: `'Don\'t know'`, `Red\, white`. `Other` **without quotes** on a radio question is a write-in: it carries its own text box, typing in the box picks it, and the typed text is what gets saved. `'Other'` in quotes, or any Other in a dropdown, is an ordinary option. Write `\<input` to show a tag as text.
 
 - **A rating is a row of real radio buttons** drawn as numbered boxes, like the code boxes. The end words describe the first and last box (`aria-describedby`), and the chosen box takes the gold fill with navy text, like the button. 2 to 11 steps.
-- **Optional is what gets marked**, as with the message field: a question without `required` says "(optional)" after its label. Checkboxes are never marked.
+- **Required is what gets marked**, with a red `*` after the label. The star is `aria-hidden`; screen readers hear "required" from the control. The error for a skipped question points at the star.
+- **A number's range is not shown up front.** `min` and `max` do not stop anyone typing outside them — the browser only objects on submit, and this form is `novalidate` — so the range appears under the box only once a student's number falls outside it, alongside "Enter a number in the range shown." 
 - **`data-only` questions are never sent to anyone they are not for.** Their labels can be personal, so `gate` sends only an empty slot. Once nine digits are typed, the page asks `restrictedFields(code, id)` for that ID's questions. Submitting waits for that answer, so a required restricted question cannot be skipped by typing fast.
 - **Answers are checked twice.** The page checks them on submit and focuses the first problem. The server re-reads `C1`, checks again, and rejects the whole check-in (`answer-server`) only if something is still wrong. That only happens if `C1` changed mid-check-in or someone bypassed the page.
 - **A malformed tag never stops the page.** It is built as well as it can be: an unknown type becomes a text box, a missing label becomes "Answer", a bad column is shown but not saved, and a tag missing its `>` ends at the end of its line. `C1` turns red, and `Check code and announcement` explains each problem. It also catches two questions writing one column, `data-only` IDs that are not in column B, curly quotes, unknown attributes, and other HTML tags.
@@ -702,6 +703,7 @@ The Apps Script web app is the backup for when Pages or DNS fails, and it must s
 
 - [ ] With the gate unpassed, the page source contains no ID field and no announcement
 - [ ] Crockford normalization works: `o`/`O` accept as `0`, `i`/`I`/`l`/`L` accept as `1`, `U` is accepted, and hyphens are ignored
+- [ ] `apps-script/announcement-guide.txt` matches what the code accepts; it is the note coaches read on `C1`
 - [ ] Every question type in `C1` renders with a visible label, works by keyboard, and writes to its column; a `data-only` question appears only for its IDs
 - [ ] A malformed tag in `C1` still renders and turns the cell red
 - [ ] Pasting a whole code or a whole 9-digit ID into any box fills the group

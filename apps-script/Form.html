@@ -22,26 +22,17 @@
     return node;
   }
 
-  /* A copy of a string from #strings. The bank is kept in the current
-     language, and the copy keeps its data-zh / data-ko, so it follows the
-     language switch like everything else. */
-  function bank(key) {
-    var source = document.querySelector('#strings [data-key="' + key + '"]');
-    return source ? source.cloneNode(true) : document.createTextNode("");
-  }
-
   function fail(element, key) {
     return { element: element, key: key };
   }
 
-  /* Matches the existing convention on this page: mark what is optional. */
-  function labelled(node, field, markOptional) {
+  /* A required question gets a red star. The star is decoration; screen
+     readers hear "required" from the control itself. */
+  function labelled(node, field) {
     node.appendChild(document.createTextNode(field.label));
-    if (markOptional && !field.required) {
+    if (field.required) {
       node.appendChild(document.createTextNode(" "));
-      var optional = bank("optional");
-      optional.className = "ask__optional";
-      node.appendChild(optional);
+      node.appendChild(el("span", { "class": "ask__star", "aria-hidden": "true" }, "*"));
     }
     return node;
   }
@@ -69,8 +60,7 @@
 
   function single(field, id) {
     var body = el("div", { "class": "ask__body" });
-    body.appendChild(labelled(el("label", { "for": id, "class": "ask__label" }), field,
-      field.type !== "color"));
+    body.appendChild(labelled(el("label", { "for": id, "class": "ask__label" }), field));
 
     var input;
     if (field.type === "select") {
@@ -114,12 +104,16 @@
     input.className = "ask__input ask__input--" + field.type;
     body.appendChild(input);
 
+    /* The range stays out of the way until a number falls outside it. The
+       browser does not stop anyone typing 9000 into a box with max="6767";
+       it only refuses on submit, and this form checks its own answers. */
+    var hint = null;
     if (field.type === "number" && rangeText(field)) {
-      var hint = el("p", { "class": "ask__hint", id: id + "-hint" }, rangeText(field));
+      hint = el("p", { "class": "ask__hint", id: id + "-hint", hidden: true }, rangeText(field));
       input.setAttribute("aria-describedby", hint.id);
       body.appendChild(hint);
     }
-    return { node: body, inputs: [input] };
+    return { node: body, inputs: [input], hint: hint };
   }
 
   /* ---------- a group: radio, rating, checkbox ---------- */
@@ -135,23 +129,34 @@
 
   function radios(field, id) {
     var set = el("fieldset", { "class": "ask__body" });
-    set.appendChild(labelled(el("legend", { "class": "ask__label" }), field, true));
+    set.appendChild(labelled(el("legend", { "class": "ask__label" }), field));
     var list = el("div", { "class": "ask__choices" });
+    var writeIn = null;
     var inputs = field.options.map(function (o) {
       var made = choice("radio", id, o.label, o.selected, field.required);
       made.input.value = o.label;
       list.appendChild(made.label);
+      if (o.other) {
+        /* Other comes with its own text box. Typing in it picks Other. */
+        made.label.classList.add("ask__choice--other");
+        made.input.setAttribute("data-other", "");
+        writeIn = el("input", extend(QUIET, {
+          type: "text", "class": "ask__input ask__other", maxlength: 200, "aria-label": o.label
+        }));
+        writeIn.addEventListener("input", function () { if (writeIn.value) made.input.checked = true; });
+        made.label.appendChild(writeIn);
+      }
       return made.input;
     });
     set.appendChild(list);
-    return { node: set, inputs: inputs };
+    return { node: set, inputs: inputs, writeIn: writeIn };
   }
 
   /* Real radio buttons drawn as a row of numbered boxes, like the code
      boxes. The words at either end describe the first and last box. */
   function rating(field, id) {
     var set = el("fieldset", { "class": "ask__body rating" });
-    set.appendChild(labelled(el("legend", { "class": "ask__label" }), field, true));
+    set.appendChild(labelled(el("legend", { "class": "ask__label" }), field));
 
     var frame = el("div", { "class": "rating__frame" });
     var scale = el("div", { "class": "rating__scale" });
@@ -185,13 +190,14 @@
     if (field.single) {
       var body = el("div", { "class": "ask__body" });
       var check = field.checks[0];
-      var made = choice("checkbox", id, field.label, check ? check.checked : false, field.required);
+      var made = choice("checkbox", id, "", check ? check.checked : false, field.required);
+      labelled(made.label.lastChild, field);
       body.appendChild(made.label);
       return { node: body, inputs: [made.input] };
     }
 
     var set = el("fieldset", { "class": "ask__body" });
-    if (field.label) set.appendChild(labelled(el("legend", { "class": "ask__label" }), field, false));
+    if (field.label) set.appendChild(labelled(el("legend", { "class": "ask__label" }), field));
     var list = el("div", { "class": "ask__choices" });
     var inputs = field.checks.map(function (c) {
       var box = choice("checkbox", id + "-" + c.col, c.label, c.checked, false);
@@ -222,13 +228,28 @@
     return inputs.some(function (input) { return input.checked; });
   }
 
+  function chosen(item) {
+    return item.inputs.filter(function (input) { return input.checked; })[0] || null;
+  }
+
+  /* An out-of-range number shows the range it has to fit. */
+  function outOfRange(item, input) {
+    if (item.hint) item.hint.hidden = false;
+    return fail(input, "answer-number");
+  }
+
   /* The same rules the server applies; it re-checks everything. */
   function check(item) {
     var field = item.field;
     var input = item.inputs[0];
 
     if (field.type === "radio" || field.type === "rating") {
-      return field.required && !anyChecked(item.inputs) ? fail(input, "answer-missing") : null;
+      if (field.required && !anyChecked(item.inputs)) return fail(input, "answer-missing");
+      var picked = chosen(item);
+      if (picked && picked.hasAttribute("data-other") && !item.writeIn.value.trim()) {
+        return fail(item.writeIn, "answer-missing"); // picked Other, wrote nothing
+      }
+      return null;
     }
     if (field.type === "checkbox") {
       return field.required && !anyChecked(item.inputs) ? fail(input, "answer-missing") : null;
@@ -236,16 +257,16 @@
     if (field.type === "color" || !input) return null;
 
     if (field.type === "number" && input.validity && input.validity.badInput) {
-      return fail(input, "answer-number");
+      return fail(input, "answer-nan");
     }
     var text = input.value.trim();
     if (!text) return field.required ? fail(input, "answer-missing") : null;
 
     if (field.type === "number") {
       var n = Number(text);
-      if (!isFinite(n)) return fail(input, "answer-number");
-      if (field.min !== null && n < field.min) return fail(input, "answer-number");
-      if (field.max !== null && n > field.max) return fail(input, "answer-number");
+      if (!isFinite(n)) return fail(input, "answer-nan");
+      if (field.min !== null && n < field.min) return outOfRange(item, input);
+      if (field.max !== null && n > field.max) return outOfRange(item, input);
       if (!stepFits(n, field.step, field.min)) return fail(input, "answer-step");
     }
     if ((field.type === "text" || field.type === "textarea") &&
@@ -262,7 +283,9 @@
 
   function clearInvalid(item) {
     item.node.classList.remove("ask--invalid");
-    item.inputs.forEach(function (input) { input.removeAttribute("aria-invalid"); });
+    item.inputs.concat(item.writeIn || []).forEach(function (input) {
+      input.removeAttribute("aria-invalid");
+    });
   }
 
   /* ---------- the form ---------- */
@@ -283,7 +306,10 @@
       var target = slot(field.i);
       if (!target) return;
       var made = build(field);
-      var item = { field: field, node: made.node, inputs: made.inputs, slot: target };
+      var item = {
+        field: field, node: made.node, inputs: made.inputs, slot: target,
+        hint: made.hint || null, writeIn: made.writeIn || null
+      };
       made.node.addEventListener("input", function () { clearInvalid(item); });
       made.node.addEventListener("change", function () { clearInvalid(item); });
       target.replaceChildren(made.node);
@@ -349,8 +375,10 @@
           }
           if (!field.col) return;
           if (field.type === "radio" || field.type === "rating") {
-            var picked = item.inputs.filter(function (input) { return input.checked; })[0];
-            out[field.col] = picked ? picked.value : "";
+            var picked = chosen(item);
+            out[field.col] = !picked ? ""
+              : picked.hasAttribute("data-other") ? item.writeIn.value.trim()
+              : picked.value;
           } else {
             out[field.col] = item.inputs[0].value;
           }

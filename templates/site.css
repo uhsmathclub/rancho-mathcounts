@@ -618,7 +618,8 @@ figure picture { display: block; }
   color: var(--ink);
 }
 
-.ask__optional { font-weight: 400; color: var(--ink-muted); }
+/* Required. The star is aria-hidden; the control itself says "required". */
+.ask__star { color: var(--danger); font-weight: 700; }
 
 .checkin .ask__input {
   font: inherit;
@@ -639,6 +640,9 @@ figure picture { display: block; }
 .ask__hint { font-size: var(--text-xs); color: var(--ink-muted); margin: .375rem 0 0; }
 
 .ask__choices { display: flex; flex-direction: column; gap: .25rem; }
+
+/* "Other" carries its own write-in box on the same line. */
+.checkin .ask__other { flex: 1 1 10rem; max-width: 20rem; min-height: 40px; padding: .375rem .625rem; }
 
 .checkin .ask__choice {
   display: flex;

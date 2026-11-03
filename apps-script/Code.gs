@@ -971,8 +971,9 @@ function richToHtml_(rich) {
  *   text, textarea   minlength, maxlength, placeholder, value
  *   number           min, max, step (default 1, or "any"), placeholder, value
  *   color            value
- *   radio, select    options="'Yes', 'No', *'Maybe'"   (* marks the default;
- *                    quotes optional; \' and \, escape inside an option)
+ *   radio, select    options="'Yes', 'No', *'Maybe', Other"   (* marks the
+ *                    default; quotes optional; \' and \, escape inside an
+ *                    option; unquoted Other on a radio adds a write-in box)
  *   rating           min (default 1), max (default 5), data-low, data-high
  *   checkbox         option-k="Wed" option-l="Thu" option-l-checked,
  *                    one checkbox per column; or data-col for a single box
@@ -1131,9 +1132,10 @@ function readAttributes_(text, pos, limit) {
 }
 
 /**
- * Split options="'Yes', 'No', *'Maybe'". Quotes are optional; inside an
- * option a backslash escapes the next character, so 'Don\'t know' and
- * Red\, white work.
+ * Split options="'Yes', 'No', *'Maybe', Other". Quotes are optional; inside
+ * an option a backslash escapes the next character, so 'Don\'t know' and
+ * Red\, white work. Other without quotes is the write-in choice: on a radio
+ * question it comes with a text box. 'Other' in quotes is an ordinary option.
  */
 function parseOptions_(raw, problems) {
   var options = [];
@@ -1149,6 +1151,7 @@ function parseOptions_(raw, problems) {
     if (raw.charAt(i) === "*") { selected = true; i += 1; skipSpace(); }
 
     var label = "";
+    var other = false;
     var quote = raw.charAt(i);
     if (quote === "'" || quote === '"') {
       i += 1;
@@ -1174,6 +1177,7 @@ function parseOptions_(raw, problems) {
         i += 1;
       }
       label = label.trim();
+      other = /^other$/i.test(label);
     }
     i += 1; // the comma
 
@@ -1185,7 +1189,12 @@ function parseOptions_(raw, problems) {
       problems.push(problem_("warning", "lists \"" + label + "\" twice; it is shown once"));
       continue;
     }
-    options.push({ label: label, selected: selected });
+    if (other && options.some(function (o) { return o.other; })) {
+      problems.push(problem_("warning", "has more than one Other; only the first gets a text box"));
+      other = false;
+    }
+    options.push(other ? { label: label, selected: selected, other: true }
+      : { label: label, selected: selected });
   }
   return options;
 }
@@ -1329,6 +1338,10 @@ function fieldFromTag_(tag, index) {
     if (defaults.length > 1) {
       problems.push(problem_("warning", "marks more than one option with *; only the first is chosen"));
       for (var d = 1; d < defaults.length; d++) defaults[d].selected = false;
+    }
+    if (type === "select") {
+      // A dropdown has nowhere to type, so its Other is just an option.
+      field.options.forEach(function (o) { delete o.other; });
     }
   }
 
@@ -1481,8 +1494,10 @@ function answerWrites_(field, answers) {
 
     case "radio":
     case "select":
-      var known = field.options.some(function (o) { return o.label === given; });
-      return known ? [{ col: field.col, value: given, kind: "text" }] : null;
+      // A write-in under Other is stored as typed, like any other choice.
+      var known = field.options.some(function (o) { return !o.other && o.label === given; });
+      var writeIn = field.options.some(function (o) { return o.other; }) && text.length <= TEXT_LIMIT;
+      return known || writeIn ? [{ col: field.col, value: known ? given : text, kind: "text" }] : null;
 
     case "color":
       if (!/^#[0-9a-f]{6}$/i.test(text)) return null;
@@ -1684,7 +1699,9 @@ function describeField_(field, headers) {
     parts.push((field.minlength ? field.minlength + " to " : "up to ") + field.maxlength + " characters");
   }
   if (field.type === "radio" || field.type === "select") {
-    parts.push(field.options.map(function (o) { return (o.selected ? "*" : "") + o.label; }).join(" / "));
+    parts.push(field.options.map(function (o) {
+      return (o.selected ? "*" : "") + o.label + (o.other ? " (write-in)" : "");
+    }).join(" / "));
   }
   if (field.type === "rating") parts.push(field.min + " to " + field.max);
   if (field.required) parts.push("required");
