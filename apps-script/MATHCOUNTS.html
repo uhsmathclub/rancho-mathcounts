@@ -74,41 +74,50 @@
       <form id="checkin" hidden novalidate>
         <h1 id="checkin-heading" tabindex="-1" data-zh="签到" data-ko="체크인">Check In</h1>
 
-        <aside class="announce" id="day-announcement" hidden></aside>
+        <div class="announce" id="day-announcement" hidden></div>
 
         <fieldset>
           <legend data-zh="学号" data-ko="학번">Student ID</legend>
           <div class="boxes boxes--id" id="id-boxes">
             <span class="boxes__group">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                autocorrect="off" spellcheck="false" maxlength="1"
                 aria-label="Student ID, digit 1 of 9" data-zh-aria-label="学号第 1 位，共 9 位"
                 data-ko-aria-label="학번, 9자리 중 1번째">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                autocorrect="off" spellcheck="false" maxlength="1"
                 aria-label="Student ID, digit 2 of 9" data-zh-aria-label="学号第 2 位，共 9 位"
                 data-ko-aria-label="학번, 9자리 중 2번째">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                autocorrect="off" spellcheck="false" maxlength="1"
                 aria-label="Student ID, digit 3 of 9" data-zh-aria-label="学号第 3 位，共 9 位"
                 data-ko-aria-label="학번, 9자리 중 3번째">
             </span>
             <span class="boxes__group">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                autocorrect="off" spellcheck="false" maxlength="1"
                 aria-label="Student ID, digit 4 of 9" data-zh-aria-label="学号第 4 位，共 9 位"
                 data-ko-aria-label="학번, 9자리 중 4번째">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                autocorrect="off" spellcheck="false" maxlength="1"
                 aria-label="Student ID, digit 5 of 9" data-zh-aria-label="学号第 5 位，共 9 位"
                 data-ko-aria-label="학번, 9자리 중 5번째">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                autocorrect="off" spellcheck="false" maxlength="1"
                 aria-label="Student ID, digit 6 of 9" data-zh-aria-label="学号第 6 位，共 9 位"
                 data-ko-aria-label="학번, 9자리 중 6번째">
             </span>
             <span class="boxes__group">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                autocorrect="off" spellcheck="false" maxlength="1"
                 aria-label="Student ID, digit 7 of 9" data-zh-aria-label="学号第 7 位，共 9 位"
                 data-ko-aria-label="학번, 9자리 중 7번째">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                autocorrect="off" spellcheck="false" maxlength="1"
                 aria-label="Student ID, digit 8 of 9" data-zh-aria-label="学号第 8 位，共 9 位"
                 data-ko-aria-label="학번, 9자리 중 8번째">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                autocorrect="off" spellcheck="false" maxlength="1"
                 aria-label="Student ID, digit 9 of 9" data-zh-aria-label="学号第 9 位，共 9 位"
                 data-ko-aria-label="학번, 9자리 중 9번째">
             </span>
@@ -148,9 +157,9 @@
 
       <div id="result" hidden>
         <h1 id="result-heading" tabindex="-1"
-          data-template-en="Welcome, {name}."
-          data-template-zh="{name}，欢迎回来。"
-          data-template-ko="{name}님, 안녕하세요."></h1>
+          data-template-en="Welcome, {name}!"
+          data-template-zh="{name}，欢迎回来！"
+          data-template-ko="{name}님, 안녕하세요!"></h1>
         <div class="result__line" id="result-line" hidden></div>
         <div id="personal-message"></div>
       </div>
@@ -160,17 +169,30 @@
           data-ko="오늘의 코드 네 글자를 다 입력하세요.">Enter all four characters of today's code.</span>
         <span data-key="code-wrong" data-zh="今日代码不正确。请查看白板或询问教练。"
           data-ko="오늘의 코드가 아니에요. 화이트보드를 확인하거나 코치에게 물어보세요.">That's not today's code. Check the board or ask a coach.</span>
-        <span data-key="id-short" data-zh="请输入完整的九位学号。"
-          data-ko="오늘의 코드가 아니에요. 화이트보드를 확인하거나 코치에게 물어보세요.">That's not today's code. Check the board or ask a coach.</span>
         <span data-key="time-missing" data-zh="请填写你离开的时间。"
           data-ko="가는 시간을 입력하세요.">Enter the time you're leaving.</span>
-            <span data-key="id-short" data-zh="请输入完整的九位学号。"
+        <span data-key="id-short" data-zh="请输入完整的九位学号。"
           data-ko="학번 아홉 자리를 다 입력하세요.">Enter all nine digits of your student ID.</span>
         <span data-key="id-unknown" data-zh="未找到该学号。"
           data-ko="해당 학번을 찾을 수 없어요.">We couldn't find that student ID.</span>
         <span data-key="offline" data-zh="目前无法连接签到系统。请告知教练。"
           data-ko="지금은 체크인에 연결할 수 없어요. 코치에게 알려 주세요.">Check-in isn't reachable right now. Tell a coach.</span>
-        <span data-key="loading" data-zh="正在签到……" data-ko="체크인 중…">Checking you in…</span>
+        <span data-key="loading" data-zh="正在签到……"
+          data-ko="체크인 중…">Checking you in…</span>
+        <span data-key="busy" data-zh="现在签到的人太多了。请稍后再试。"
+          data-ko="지금 체크인하는 사람이 너무 많아요. 잠시 후 다시 시도하세요.">Too many people are checking in at once. Try again in a moment.</span>
+        <span data-key="answer-missing" data-zh="请回答所有没有标“选填”的问题。"
+          data-ko="‘선택 사항’ 표시가 없는 질문에는 모두 답하세요.">Answer every question that isn't marked optional.</span>
+        <span data-key="answer-number" data-zh="请输入所示范围内的数字。"
+          data-ko="표시된 범위 안의 숫자를 입력하세요.">Enter a number in the range shown.</span>
+        <span data-key="answer-step" data-zh="这个数字不是可选的值。"
+          data-ko="이 숫자는 입력할 수 없어요.">That number isn't one of the allowed values.</span>
+        <span data-key="answer-short" data-zh="这个回答太短了。"
+          data-ko="답이 너무 짧아요.">That answer is too short.</span>
+        <span data-key="answer-server" data-zh="有一个回答无法保存。请刷新页面后重试。"
+          data-ko="답 하나를 저장하지 못했어요. 페이지를 새로 고친 뒤 다시 시도하세요.">One of your answers couldn't be saved. Reload the page and try again.</span>
+        <span data-key="optional" data-zh="（选填）"
+          data-ko="(선택 사항)">(optional)</span>
       </div>
 
     </section>
@@ -190,208 +212,8 @@
   </div>
 
   <?!= HtmlService.createHtmlOutputFromFile('Script').getContent(); ?>
-
-  <script>
-    /* Same three steps as the public site, over google.script.run instead of
-       fetch. Keep this in sync with templates/hello.js. */
-    (function () {
-      "use strict";
-
-      var CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-      var ID_KEY = "mc-student-id";
-
-      var gate = document.getElementById("gate");
-      var checkin = document.getElementById("checkin");
-      var result = document.getElementById("result");
-      var strings = document.getElementById("strings");
-      var codeBoxes = [].slice.call(document.querySelectorAll("#code-boxes input"));
-      var idBoxes = [].slice.call(document.querySelectorAll("#id-boxes input"));
-      var dayCode = "";
-
-      function show(slot, key) {
-        var source = strings.querySelector('[data-key="' + key + '"]');
-        slot.replaceChildren(source ? source.cloneNode(true) : document.createTextNode(""));
-        // "Checking you in..." shares the slot but is not a failure.
-        slot.className = key === "loading" ? "error error--busy" : "error";
-      }
-
-      function normalizeCode(ch) {
-        ch = ch.toUpperCase();
-        if (ch === "I" || ch === "L") return "1";
-        if (ch === "O") return "0";
-        return CROCKFORD.indexOf(ch) > -1 ? ch : "";
-      }
-
-      function normalizeDigit(ch) {
-        return ch >= "0" && ch <= "9" ? ch : "";
-      }
-
-      function readValue(boxes) {
-        return boxes.map(function (box) { return box.value; }).join("");
-      }
-
-      function fill(boxes, text, normalize) {
-        var cleaned = "";
-        for (var i = 0; i < text.length && cleaned.length < boxes.length; i++) {
-          if (text.charAt(i) === "-") continue;
-          cleaned += normalize(text.charAt(i));
-        }
-        boxes.forEach(function (box, index) { box.value = cleaned.charAt(index) || ""; });
-        return cleaned;
-      }
-
-      function wire(boxes, normalize) {
-        boxes.forEach(function (box, index) {
-          box.addEventListener("input", function () {
-            var raw = box.value;
-            box.value = normalize(raw.charAt(raw.length - 1) || "");
-            if (box.value && index < boxes.length - 1) boxes[index + 1].focus();
-          });
-          box.addEventListener("keydown", function (event) {
-            if (event.key === "Backspace" && !box.value && index > 0) {
-              event.preventDefault();
-              boxes[index - 1].value = "";
-              boxes[index - 1].focus();
-            } else if (event.key === "ArrowLeft" && index > 0) {
-              event.preventDefault();
-              boxes[index - 1].focus();
-            } else if (event.key === "ArrowRight" && index < boxes.length - 1) {
-              event.preventDefault();
-              boxes[index + 1].focus();
-            }
-          });
-          box.addEventListener("paste", function (event) {
-            event.preventDefault();
-            var text = (event.clipboardData || window.clipboardData).getData("text");
-            var filled = fill(boxes, text, normalize);
-            boxes[Math.min(filled.length, boxes.length - 1)].focus();
-          });
-          box.addEventListener("focus", function () { box.select(); });
-        });
-      }
-
-      wire(codeBoxes, normalizeCode);
-      wire(idBoxes, normalizeDigit);
-      codeBoxes[0].focus(); // the sandboxed frame ignores the autofocus attribute
-
-      var gateError = document.getElementById("gate-error");
-      var gateSubmit = document.getElementById("gate-submit");
-      var checkinError = document.getElementById("checkin-error");
-      var checkinSubmit = document.getElementById("checkin-submit");
-      var savedHint = document.getElementById("saved-hint");
-      var leaving = document.getElementById("leaving");
-      var leavingTime = document.getElementById("leaving-time");
-      var leavingWhen = document.getElementById("leaving-when");
-
-      leaving.addEventListener("change", function () {
-        leavingWhen.hidden = !leaving.checked;
-        leavingTime.required = leaving.checked;
-        if (!leaving.checked) leavingTime.value = "";
-        if (leaving.checked) leavingTime.focus();
-      });
-
-      document.getElementById("erase").addEventListener("click", function () {
-        try { localStorage.removeItem(ID_KEY); } catch (e) {}
-        fill(idBoxes, "", normalizeDigit);
-        savedHint.hidden = true;
-        idBoxes[0].focus();
-      });
-
-      gate.addEventListener("submit", function (event) {
-        event.preventDefault();
-        var code = readValue(codeBoxes);
-        if (code.length < codeBoxes.length) { show(gateError, "code-short"); return; }
-
-        gateError.replaceChildren();
-        gateError.className = "error";
-        gateSubmit.disabled = true;
-
-        google.script.run
-          .withSuccessHandler(function (data) {
-            gateSubmit.disabled = false;
-            if (!data.ok) { show(gateError, "code-wrong"); return; }
-            dayCode = code;
-            openCheckin(data.announcement || "");
-          })
-          .withFailureHandler(function () {
-            gateSubmit.disabled = false;
-            show(gateError, "offline");
-          })
-          .gate(code);
-      });
-
-      function openCheckin(announcementHtml) {
-        gate.hidden = true;
-        checkin.hidden = false;
-
-        var slot = document.getElementById("day-announcement");
-        if (announcementHtml) {
-          slot.innerHTML = announcementHtml;
-          slot.hidden = false;
-        }
-
-        var saved = "";
-        try { saved = localStorage.getItem(ID_KEY) || ""; } catch (e) {}
-        if (saved) {
-          fill(idBoxes, saved, normalizeDigit);
-          savedHint.hidden = false;
-        }
-
-        document.getElementById("checkin-heading").focus();
-      }
-
-      checkin.addEventListener("submit", function (event) {
-        event.preventDefault();
-        var id = readValue(idBoxes);
-        if (id.length < idBoxes.length) { show(checkinError, "id-short"); return; }
-
-        if (leaving.checked && !leavingTime.value) {
-          show(checkinError, "time-missing");
-          leavingTime.focus();
-          return;
-        }
-
-        show(checkinError, "loading");
-        checkinSubmit.disabled = true;
-
-        google.script.run
-          .withSuccessHandler(function (data) {
-            checkinSubmit.disabled = false;
-            if (!data.ok) {
-              show(checkinError, data.error === "code" ? "code-wrong" : "id-unknown");
-              return;
-            }
-            try { localStorage.setItem(ID_KEY, id); } catch (e) {}
-            openResult(data.name || "", data.message || "");
-          })
-          .withFailureHandler(function () {
-            checkinSubmit.disabled = false;
-            show(checkinError, "offline");
-          })
-          .checkIn(dayCode, id, document.getElementById("message").value,
-                   leaving.checked ? leavingTime.value : "");
-      });
-
-      function openResult(name, personalHtml) {
-        checkin.hidden = true;
-        result.hidden = false;
-
-        var heading = document.getElementById("result-heading");
-        ["en", "zh", "ko"].forEach(function (lang) {
-          var template = heading.getAttribute("data-template-" + lang) || "";
-          heading.dataset[lang] = template.replace("{name}", name);
-        });
-        heading.textContent = heading.dataset[document.documentElement.dataset.lang || "en"];
-
-        if (personalHtml) {
-          document.getElementById("result-line").hidden = false;
-          document.getElementById("personal-message").innerHTML = personalHtml;
-        }
-
-        heading.focus();
-      }
-    })();
-  </script>
+  <?!= HtmlService.createHtmlOutputFromFile('Form').getContent(); ?>
+  <?!= HtmlService.createHtmlOutputFromFile('Hello').getContent(); ?>
 </body>
 
 </html>

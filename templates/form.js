@@ -1,0 +1,362 @@
+/* Rancho MATHCOUNTS — questions inside the day announcement.
+   The server reads each <input> tag a coach wrote into Dashboard!C1 and
+   sends a plain description of it; nothing a coach typed is inserted as
+   HTML. This file builds a real, labelled control for each one in the slot
+   the server left for it. hello.js drives it on both the public page and
+   the Apps Script fallback. */
+(function () {
+  "use strict";
+
+  var serial = 0;
+
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    for (var name in attrs) {
+      var value = attrs[name];
+      if (value === null || value === undefined || value === false) continue;
+      node.setAttribute(name, value === true ? "" : String(value));
+    }
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  /* A copy of a string from #strings. The bank is kept in the current
+     language, and the copy keeps its data-zh / data-ko, so it follows the
+     language switch like everything else. */
+  function bank(key) {
+    var source = document.querySelector('#strings [data-key="' + key + '"]');
+    return source ? source.cloneNode(true) : document.createTextNode("");
+  }
+
+  function fail(element, key) {
+    return { element: element, key: key };
+  }
+
+  /* Matches the existing convention on this page: mark what is optional. */
+  function labelled(node, field, markOptional) {
+    node.appendChild(document.createTextNode(field.label));
+    if (markOptional && !field.required) {
+      node.appendChild(document.createTextNode(" "));
+      var optional = bank("optional");
+      optional.className = "ask__optional";
+      node.appendChild(optional);
+    }
+    return node;
+  }
+
+  /* Browsers would otherwise offer last week's answer back, or restore it
+     on Back. Every control is built fresh and remembers nothing. */
+  var QUIET = { autocomplete: "off" };
+
+  function extend(base, more) {
+    var out = {};
+    var key;
+    for (key in base) out[key] = base[key];
+    for (key in more) out[key] = more[key];
+    return out;
+  }
+
+  function rangeText(field) {
+    if (field.min !== null && field.max !== null) return field.min + " – " + field.max;
+    if (field.min !== null) return "≥ " + field.min;
+    if (field.max !== null) return "≤ " + field.max;
+    return "";
+  }
+
+  /* ---------- one control: text, textarea, number, color, select ---------- */
+
+  function single(field, id) {
+    var body = el("div", { "class": "ask__body" });
+    body.appendChild(labelled(el("label", { "for": id, "class": "ask__label" }), field,
+      field.type !== "color"));
+
+    var input;
+    if (field.type === "select") {
+      input = el("select", extend(QUIET, { id: id, required: field.required }));
+      var chosen = field.options.some(function (o) { return o.selected; });
+      if (!chosen) input.appendChild(el("option", { value: "" }, ""));
+      field.options.forEach(function (o) {
+        var option = el("option", {}, o.label);
+        option.value = o.label;
+        option.defaultSelected = o.selected;
+        input.appendChild(option);
+      });
+    } else if (field.type === "textarea") {
+      input = el("textarea", extend(QUIET, {
+        id: id, rows: 3, required: field.required,
+        minlength: field.minlength, maxlength: field.maxlength,
+        placeholder: field.placeholder || null
+      }));
+      input.value = field.value || "";
+    } else if (field.type === "number") {
+      var whole = field.step !== null && field.step % 1 === 0;
+      input = el("input", extend(QUIET, {
+        type: "number", id: id, required: field.required,
+        min: field.min, max: field.max, step: field.step === null ? "any" : field.step,
+        /* iOS's numeric pad has no minus sign or decimal point. */
+        inputmode: whole && (field.min !== null && field.min >= 0) ? "numeric" : "decimal",
+        placeholder: field.placeholder || null
+      }));
+      input.value = field.value || "";
+    } else if (field.type === "color") {
+      input = el("input", extend(QUIET, { type: "color", id: id }));
+      input.value = field.value || "#000000";
+    } else {
+      input = el("input", extend(QUIET, {
+        type: "text", id: id, required: field.required,
+        minlength: field.minlength, maxlength: field.maxlength,
+        placeholder: field.placeholder || null
+      }));
+      input.value = field.value || "";
+    }
+    input.className = "ask__input ask__input--" + field.type;
+    body.appendChild(input);
+
+    if (field.type === "number" && rangeText(field)) {
+      var hint = el("p", { "class": "ask__hint", id: id + "-hint" }, rangeText(field));
+      input.setAttribute("aria-describedby", hint.id);
+      body.appendChild(hint);
+    }
+    return { node: body, inputs: [input] };
+  }
+
+  /* ---------- a group: radio, rating, checkbox ---------- */
+
+  function choice(type, name, text, checked, required) {
+    var label = el("label", { "class": "ask__choice" });
+    var input = el("input", extend(QUIET, { type: type, name: name, required: required }));
+    input.defaultChecked = !!checked;
+    label.appendChild(input);
+    label.appendChild(el("span", {}, text));
+    return { label: label, input: input };
+  }
+
+  function radios(field, id) {
+    var set = el("fieldset", { "class": "ask__body" });
+    set.appendChild(labelled(el("legend", { "class": "ask__label" }), field, true));
+    var list = el("div", { "class": "ask__choices" });
+    var inputs = field.options.map(function (o) {
+      var made = choice("radio", id, o.label, o.selected, field.required);
+      made.input.value = o.label;
+      list.appendChild(made.label);
+      return made.input;
+    });
+    set.appendChild(list);
+    return { node: set, inputs: inputs };
+  }
+
+  /* Real radio buttons drawn as a row of numbered boxes, like the code
+     boxes. The words at either end describe the first and last box. */
+  function rating(field, id) {
+    var set = el("fieldset", { "class": "ask__body rating" });
+    set.appendChild(labelled(el("legend", { "class": "ask__label" }), field, true));
+
+    var frame = el("div", { "class": "rating__frame" });
+    var scale = el("div", { "class": "rating__scale" });
+    var inputs = [];
+    for (var n = field.min; n <= field.max; n++) {
+      var step = el("label", { "class": "rating__step" });
+      var input = el("input", extend(QUIET, { type: "radio", name: id, required: field.required }));
+      input.value = String(n);
+      step.appendChild(input);
+      step.appendChild(el("span", {}, String(n)));
+      scale.appendChild(step);
+      inputs.push(input);
+    }
+    frame.appendChild(scale);
+
+    if (field.low || field.high) {
+      var ends = el("p", { "class": "rating__ends" });
+      var low = el("span", { id: id + "-low" }, field.low || "");
+      var high = el("span", { id: id + "-high" }, field.high || "");
+      ends.appendChild(low);
+      ends.appendChild(high);
+      frame.appendChild(ends);
+      if (field.low) inputs[0].setAttribute("aria-describedby", low.id);
+      if (field.high) inputs[inputs.length - 1].setAttribute("aria-describedby", high.id);
+    }
+    set.appendChild(frame);
+    return { node: set, inputs: inputs };
+  }
+
+  function checkboxes(field, id) {
+    if (field.single) {
+      var body = el("div", { "class": "ask__body" });
+      var check = field.checks[0];
+      var made = choice("checkbox", id, field.label, check ? check.checked : false, field.required);
+      body.appendChild(made.label);
+      return { node: body, inputs: [made.input] };
+    }
+
+    var set = el("fieldset", { "class": "ask__body" });
+    if (field.label) set.appendChild(labelled(el("legend", { "class": "ask__label" }), field, false));
+    var list = el("div", { "class": "ask__choices" });
+    var inputs = field.checks.map(function (c) {
+      var box = choice("checkbox", id + "-" + c.col, c.label, c.checked, false);
+      list.appendChild(box.label);
+      return box.input;
+    });
+    set.appendChild(list);
+    return { node: set, inputs: inputs };
+  }
+
+  function build(field) {
+    var id = "ask-" + (++serial);
+    if (field.type === "radio") return radios(field, id);
+    if (field.type === "rating") return rating(field, id);
+    if (field.type === "checkbox") return checkboxes(field, id);
+    return single(field, id);
+  }
+
+  /* ---------- checking ---------- */
+
+  function stepFits(n, step, base) {
+    if (step === null || step === undefined) return true;
+    var q = (n - (base === null || base === undefined ? 0 : base)) / step;
+    return Math.abs(q - Math.round(q)) < 1e-9 * Math.max(1, Math.abs(q));
+  }
+
+  function anyChecked(inputs) {
+    return inputs.some(function (input) { return input.checked; });
+  }
+
+  /* The same rules the server applies; it re-checks everything. */
+  function check(item) {
+    var field = item.field;
+    var input = item.inputs[0];
+
+    if (field.type === "radio" || field.type === "rating") {
+      return field.required && !anyChecked(item.inputs) ? fail(input, "answer-missing") : null;
+    }
+    if (field.type === "checkbox") {
+      return field.required && !anyChecked(item.inputs) ? fail(input, "answer-missing") : null;
+    }
+    if (field.type === "color" || !input) return null;
+
+    if (field.type === "number" && input.validity && input.validity.badInput) {
+      return fail(input, "answer-number");
+    }
+    var text = input.value.trim();
+    if (!text) return field.required ? fail(input, "answer-missing") : null;
+
+    if (field.type === "number") {
+      var n = Number(text);
+      if (!isFinite(n)) return fail(input, "answer-number");
+      if (field.min !== null && n < field.min) return fail(input, "answer-number");
+      if (field.max !== null && n > field.max) return fail(input, "answer-number");
+      if (!stepFits(n, field.step, field.min)) return fail(input, "answer-step");
+    }
+    if ((field.type === "text" || field.type === "textarea") &&
+        field.minlength && text.length < field.minlength) {
+      return fail(input, "answer-short");
+    }
+    return null;
+  }
+
+  function markInvalid(item, element) {
+    item.node.classList.add("ask--invalid");
+    element.setAttribute("aria-invalid", "true");
+  }
+
+  function clearInvalid(item) {
+    item.node.classList.remove("ask--invalid");
+    item.inputs.forEach(function (input) { input.removeAttribute("aria-invalid"); });
+  }
+
+  /* ---------- the form ---------- */
+
+  /* Put the announcement's HTML in `container` and build its questions.
+     Questions marked restricted are only placeholders until reveal() is
+     given their descriptions for the student ID that was typed. */
+  function render(container, html, fields) {
+    container.innerHTML = html; // escaped on the server, as before
+    var items = {};
+    var restricted = [];
+
+    function slot(i) {
+      return container.querySelector('[data-field="' + i + '"]');
+    }
+
+    function place(field) {
+      var target = slot(field.i);
+      if (!target) return;
+      var made = build(field);
+      var item = { field: field, node: made.node, inputs: made.inputs, slot: target };
+      made.node.addEventListener("input", function () { clearInvalid(item); });
+      made.node.addEventListener("change", function () { clearInvalid(item); });
+      target.replaceChildren(made.node);
+      target.hidden = false;
+      items[field.i] = item;
+    }
+
+    (fields || []).forEach(function (field) {
+      if (field.restricted) {
+        restricted.push(field.i);
+        var target = slot(field.i);
+        if (target) target.hidden = true;
+      } else {
+        place(field);
+      }
+    });
+
+    function ordered() {
+      return Object.keys(items).map(Number).sort(function (a, b) { return a - b; })
+        .map(function (i) { return items[i]; });
+    }
+
+    return {
+      hasRestricted: function () { return restricted.length > 0; },
+
+      reveal: function (specs) {
+        this.hideRestricted();
+        (specs || []).forEach(function (field) {
+          if (restricted.indexOf(field.i) > -1) place(field);
+        });
+      },
+
+      hideRestricted: function () {
+        restricted.forEach(function (i) {
+          var target = slot(i);
+          if (target) { target.replaceChildren(); target.hidden = true; }
+          delete items[i];
+        });
+      },
+
+      /* The first problem, in page order, or null. */
+      validate: function () {
+        var list = ordered();
+        list.forEach(clearInvalid);
+        for (var k = 0; k < list.length; k++) {
+          var problem = check(list[k]);
+          if (problem) {
+            markInvalid(list[k], problem.element);
+            return problem;
+          }
+        }
+        return null;
+      },
+
+      /* { K: "412", L: true, ... } keyed by the column each answer goes to. */
+      answers: function () {
+        var out = {};
+        ordered().forEach(function (item) {
+          var field = item.field;
+          if (field.type === "checkbox") {
+            field.checks.forEach(function (c, k) { out[c.col] = !!item.inputs[k].checked; });
+            return;
+          }
+          if (!field.col) return;
+          if (field.type === "radio" || field.type === "rating") {
+            var picked = item.inputs.filter(function (input) { return input.checked; })[0];
+            out[field.col] = picked ? picked.value : "";
+          } else {
+            out[field.col] = item.inputs[0].value;
+          }
+        });
+        return out;
+      }
+    };
+  }
+
+  window.MCForm = { render: render };
+})();

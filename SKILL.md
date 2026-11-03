@@ -397,17 +397,17 @@ The page is a **gate, then a form.** Nothing behind the gate — including the d
 
 - The first box takes focus on load, so a student can start typing without aiming at anything. The public page uses the `autofocus` attribute; the Apps Script fallback calls `.focus()`, because a sandboxed frame ignores the attribute.
 - Four boxes. `--font-mono`, uppercased on input, `inputmode="text"`, `autocapitalize="characters"`, `autocomplete="off"`, `maxlength="1"` each.
-- The alphabet is Crockford base-32, so input normalizes as the reader types: `I`, `i`, `L`, `l` become `1`; `O`, `o` become `0`; hyphens are ignored. A student who reads a `0` on the whiteboard as an `O` still gets in.
+- The alphabet is Crockford base-32 plus `U`, so input normalizes as the reader types: `I`, `i`, `L`, `l` become `1`; `O`, `o` become `0`; hyphens are ignored. A student who reads a `0` on the whiteboard as an `O` still gets in. `U` is accepted because a coach may write a themed code by hand; the generator never draws one.
 - **Nothing drawn from the spreadsheet may be in the page before the gate passes** — not the announcement, not a name, not a count, not an ID. The empty step 2 form may sit in the markup `hidden`, because an empty input box discloses nothing and keeping it in the HTML keeps the page working without JavaScript rebuilding it.
 - A wrong code produces one message and nothing else. It must not reveal whether any ID exists, whether there is an announcement, or how many students are enrolled.
 - The code is never written to `localStorage` and never put in the URL.
 
 **Step 2 — check in.** Replaces step 1 once the code is accepted. Focus moves to the step 2 heading.
 
-- The **day announcement** from `Dashboard!C1` sits at the top. This is the only place on the site where it appears.
+- The **day announcement** from `Dashboard!C1` sits at the top. This is the only place on the site where it appears. It may contain **questions** (see **Questions in the Announcement**); they are part of this form and are submitted with it.
 - **Student ID:** nine boxes. `--font-mono`, `inputmode="numeric"`, `pattern="[0-9]*"`, `maxlength="1"` each, grouped 3–3–3 with a wider gap between groups so the eye can track position. Digits are visible, not masked.
 - **Message to your coaches:** optional `<textarea>`, auto-growing, no character counter.
-- **Leaving early:** a checkbox that reveals a labelled time field. The label is visible, not screen-reader-only — these are twelve-year-olds, and a bare time box next to a checkbox is a guess. Label and field are wrapped together and hidden together with `hidden`, not `visibility: hidden`, so they leave the tab order when unchecked.
+- **Leaving early:** a checkbox that reveals a labelled time field **on its own line below it** — side by side, ticking the box shoved the row sideways. The label is visible, not screen-reader-only — these are twelve-year-olds, and a bare time box next to a checkbox is a guess. Label and field are wrapped together and hidden together with `hidden`, not `visibility: hidden`, so they leave the tab order when unchecked.
 - **Ticking the box makes the time required.** Unticking it clears the value, so an abandoned half-answer cannot be submitted. The form is `novalidate`, so this is checked in the submit handler and reported through the same error slot as everything else.
 - **Behavior that is not optional,** on both digit groups: typing advances focus; Backspace on an empty box moves back and clears; arrow keys move between boxes; pasting a whole code or a whole nine-digit ID into any box distributes across all of them; Enter submits from any box.
 - **Accessibility:** each group is a `<fieldset>` with a visible `<legend>`. Each box has an `aria-label` naming its position. An `aria-live="polite"` region announces errors. Keyboard-only operation, no traps.
@@ -529,8 +529,8 @@ The spreadsheet is the database. Its shape is fixed, and the code must not assum
 
 | Sheet        | Layout                                                                                                                                                             |
 |--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Dashboard`  | `B1` day code · `C1` day announcement · from **row 3**: `A` name, `B` student ID, `C` timestamp, `D` personal message, `E` student response, `F` leaving-early time |
-| `Log`        | `A` name, `B` timestamp, `C` response. **Append-only** — never rewritten, never cleared                                                                            |
+| `Dashboard`  | `B1` day code · `C1` day announcement · row 2 headers · from **row 3**: `A` name, `B` student ID, `C` timestamp, `D` personal message, `E` student response, `F` leaving-early time, `G` onward for coaches and for answers to `C1`'s questions |
+| `Log`        | `A` name, `B` timestamp, `C` response, `D` answers to `C1`'s questions (`K: 412 · L: TRUE`). **Append-only** — never rewritten, never cleared |
 | `Attendance` | `A` name, `B` student ID, then one column per meeting with the date in row 1                                                                                       |
 
 Names in `Dashboard!A` take the form `Preferred (Legal) Last`, collapsing to `First Last` when the preferred and legal names match. Anything greeting a student must handle both.
@@ -547,9 +547,11 @@ Three things here are easy to get wrong and silently destructive:
 
 **Checking in twice** overwrites that student's `Dashboard` row — there is one row per student — and appends another `Log` entry. The log is the record; the dashboard is the view.
 
-**Overwriting never destroys an answer.** Before `E` and `F` are replaced, whatever they held is appended to that cell's own note, stamped with the previous check-in time. A student who said they were leaving early, and then checked in again after a coach updated their message, would otherwise silently stop being marked as leaving. `New day` clears those two notes. It does **not** clear column D's note, which is the message template.
+**Overwriting never destroys an answer.** Before `E`, `F`, or a question's column is replaced with something different, whatever they held is appended to that cell's own note, stamped with the previous check-in time. A student who said they were leaving early, and then checked in again after a coach updated their message, would otherwise silently stop being marked as leaving. `New day` clears those two notes. It does **not** clear column D's note, which is the message template.
 
-**The menu** is the only way anything runs. There are no triggers.
+**Student text is stored as text.** Everything a student typed is written with a leading apostrophe, which Sheets hides: otherwise `=IMPORTRANGE(…)` in a message would run as a formula and `007` would become `7`.
+
+**The menu** is how everything runs. The one trigger is a simple `onEdit` that re-checks `B1` and `C1` when a coach types into them and turns the cell light red (`#f4cccc`) if a student would hit a problem. It never blocks the edit or opens a dialog, and it only ever clears that exact red.
 
 | Item | Does |
 |------|------|
@@ -559,6 +561,8 @@ Three things here are easy to get wrong and silently destructive:
 | `Evaluate template` | Expands the template in column D down the selection |
 | `Evaluate template and save note` | The same, keeping the template as a cell note |
 | `Restore template from note` | Puts the saved template back so it can be edited |
+| `Check code and announcement` | Explains every problem with `B1` and `C1`, colours them, and puts checkboxes in checkbox questions' blank student cells |
+| `Clear announcement answers` | Empties the columns `C1`'s questions write to, notes and colours too, after confirming. `New day` does **not** do this: those columns are G onward, which coaches also use |
 
 Each does exactly one thing. `New day` does **not** add an attendance column: meetings get cancelled, codes get re-rolled, and a reset should never silently mark a column that did not happen.
 
@@ -566,7 +570,7 @@ Neither action announces the new code. It lands in `B1`, in front of whoever ran
 
 ### The Day Code
 
-- Four characters of **Crockford base-32**: `0123456789ABCDEFGHJKMNPQRSTVWXYZ`. `I`, `L`, and `O` are excluded because they are misread as `1`, `1`, and `0`; `U` is excluded so the generator cannot produce a word nobody wants on a whiteboard.
+- Four characters of **Crockford base-32**: `0123456789ABCDEFGHJKMNPQRSTVWXYZ`. `I`, `L`, and `O` are excluded because they are misread as `1`, `1`, and `0`; `U` is excluded so the generator cannot produce a word nobody wants on a whiteboard. Students may still **type** `U`, so a hand-written code like `UNIT` works; `Check code and announcement` flags a code in `B1` that is not four typable characters.
 - Input is normalized before comparison: uppercase, `I`/`i`/`L`/`l` to `1`, `O`/`o` to `0`, hyphens stripped. A student who transcribes the code wrong in the predictable way still gets in.
 - Generate from `Utilities.getUuid()` entropy rather than `Math.random()`, and reject modulo bias instead of taking a remainder.
 - Compare with a **constant-time equality check**: accumulate XOR differences across a fixed length and test once at the end. Never `===`, never an early `return false`.
@@ -578,7 +582,7 @@ Neither action announces the new code. It lands in `B1`, in front of whoever ran
 
 A coach writes one message into column D and expands it down a selection. This is the only part of the system a coach programs, so it fails soft everywhere: an unknown token is left on the page exactly as typed rather than silently deleted.
 
-**Tokens** start with a backslash. `\Name` is the preferred first name, `\FullName` the whole of column A, `\LastName` its last word, `\LegalName` the part in parentheses. `\G`, `\H`, `\AA` read any column from G onward — A through F are the check-in's own columns and are never substitutable. `\n` is a line break and `\\` is a literal backslash.
+**Tokens** start with a backslash. `\Name` is the preferred first name, `\FullName` the whole of column A, `\LastName` its last word, `\LegalName` the part in parentheses. `\G`, `\H`, `\AA` read any column from G onward — A through F are the check-in's own columns and are never substitutable. `\n` is a line break and `\\` is a literal backslash. `\*`, `\_`, `\~`, `\[`, `\#`, `\>`, and `` \` `` print that character instead of reading it as markdown.
 
 Three collisions have to be resolved in a fixed order, and the order is the design:
 
@@ -586,7 +590,7 @@ Three collisions have to be resolved in a fixed order, and the order is the desi
 2. **Presets before column letters.** `L` is a perfectly good column, so `\LastName` would otherwise parse as column L followed by `astName`. Presets are matched longest-first for the same reason.
 3. **Longest valid column run.** `\GH` is column GH if that column exists, otherwise column G followed by a literal `H`.
 
-Expansion is one left-to-right pass. Substitution happens **before** the markdown pass, so a value pulled out of column G that happens to contain `**` will be read as formatting — acceptable, because every column here is written by a coach.
+Expansion is one left-to-right pass. Substituted values are **literal**: a `**` inside a column value prints as `**`. Columns from G on now hold student answers too, and a student must not be able to format, or add links to, a message. A marker with no partner (`2*3 = 6`) also prints as written instead of italicizing the rest of the cell.
 
 **What the sheet can hold**, and therefore what expansion resolves into real cell formatting: `**bold**`, `*italic*`, `__underline__`, `~~strike~~`, `[text](url)`. Note that `__` means underline here, not bold as in CommonMark — a spreadsheet has underline and markdown has no syntax for it.
 
@@ -596,15 +600,46 @@ Expansion is one left-to-right pass. Substitution happens **before** the markdow
 
 **Expansion is one read and one write, never a loop of them.** The whole selection is read with `getDisplayValues`, expanded in memory, and written back with `setRichTextValues`. Cell-by-cell writing costs four API round trips per row and, worse, leaves one undo step per row behind — a coach who picks the wrong menu item would have to hold Ctrl+Z down. Batched, the values are a single undo and saving notes adds exactly one more.
 
-**The note is the source of truth once it exists.** A cell holding markers is a fresh edit and wins; otherwise the note is the template and the cell is the last run's output. That is what makes the whole thing idempotent — without it, the first expansion destroys the template it came from.
+**The note is the source of truth once it exists.** A cell holding markers is a fresh edit and wins — unless its text is exactly what the note expands to, in which case it is the last run's output that happens to contain literal markers. Otherwise the note is the template and the cell is the last run's output. That is what makes the whole thing idempotent — without it, the first expansion destroys the template it came from.
+
+### Questions in the Announcement
+
+`C1` is markdown like a column D template: inline markers, `\n`, headings, quotes, and the escapes. It has no name tokens, because nobody has given an ID yet. Formatting typed directly in the cell is kept as well.
+
+It can also ask the room something. A coach writes an `<input>` tag where the question should appear, on one line:
+
+```
+<input type="number" data-label="Number" min="0" max="6767" step="any" data-col="K" required>
+```
+
+**The tag is never inserted as HTML.** The server reads it as a small declaration and sends the page a plain description, and `templates/form.js` builds a real, labelled control in its place. Every control has `autocomplete="off"` and starts empty or at its stated default, so a browser never offers last week's answer.
+
+| `type` | Extra attributes | Writes |
+|---|---|---|
+| `text`, `textarea` | `minlength`, `maxlength` (capped at 2000), `placeholder`, `value` | the text |
+| `number` | `min`, `max`, `step` (default `1`, or `any`), `placeholder`, `value` | a number |
+| `color` | `value` (`#rrggbb`) | the hex code, and the cell turns that colour |
+| `radio`, `select` (or `dropdown`) | `options="'Yes', 'No', *'Maybe'"` | the option's text |
+| `rating` | `min` (default 1), `max` (default 5), `data-low`, `data-high` | a number |
+| `checkbox` | `option-k="Wed" option-l="Thu" option-l-checked`, or `data-col` + `checked` for one box | `TRUE`/`FALSE`, one column per option, as real checkboxes |
+
+Every type takes `data-label` (the question; it becomes the `<label>` or `<legend>`), `data-col` (the column, G or later; `K` and `\K` both work), `required`, and `data-only="123456789|987654321"` (only those IDs see it). In `options`, quotes are optional, `*` marks the default, and a backslash escapes the next character: `'Don\'t know'`, `Red\, white`. Write `\<input` to show a tag as text.
+
+- **A rating is a row of real radio buttons** drawn as numbered boxes, like the code boxes. The end words describe the first and last box (`aria-describedby`), and the chosen box takes the gold fill with navy text, like the button. 2 to 11 steps.
+- **Optional is what gets marked**, as with the message field: a question without `required` says "(optional)" after its label. Checkboxes are never marked.
+- **`data-only` questions are never sent to anyone they are not for.** Their labels can be personal, so `gate` sends only an empty slot. Once nine digits are typed, the page asks `restrictedFields(code, id)` for that ID's questions. Submitting waits for that answer, so a required restricted question cannot be skipped by typing fast.
+- **Answers are checked twice.** The page checks them on submit and focuses the first problem. The server re-reads `C1`, checks again, and rejects the whole check-in (`answer-server`) only if something is still wrong. That only happens if `C1` changed mid-check-in or someone bypassed the page.
+- **A malformed tag never stops the page.** It is built as well as it can be: an unknown type becomes a text box, a missing label becomes "Answer", a bad column is shown but not saved, and a tag missing its `>` ends at the end of its line. `C1` turns red, and `Check code and announcement` explains each problem. It also catches two questions writing one column, `data-only` IDs that are not in column B, curly quotes, unknown attributes, and other HTML tags.
 
 ### Two Copies of One Screen
 
-`templates/hello.html` plus `templates/hello.js`, and `apps-script/MATHCOUNTS.html`, are the same screen written twice — once over `fetch` and once over `google.script.run`. They have drifted apart more than once: a string edited on one side, a message added to the other, a script left calling a key that no longer exists and rendering an empty error.
+`templates/hello.html` and `apps-script/MATHCOUNTS.html` are the same screen written twice. They have drifted apart more than once: a string edited on one side, a message added to the other, a merge that left a key defined twice so the fallback showed "That's not today's code" for a short ID.
 
-**The build checks them and refuses to continue on a divergence.** It compares every `data-key` message across both pages in all three languages, and it checks that every key either script asks for actually exists. A mismatch fails the build with the specific keys named. This is not a style rule; it is the only thing standing between a one-sided edit and a blank error message in front of a room of students.
+**The script is no longer duplicated.** `templates/hello.js` talks over `fetch` on the public site and over `google.script.run` (to `api()`) inside Apps Script. It and `templates/form.js` are copied into `apps-script/Hello.html` and `Form.html` on every build.
 
-`Stylesheet.html` and `Script.html` in that folder are **generated** from `templates/site.css` and `templates/site.js` on every build. Editing them does nothing: the next build overwrites the file and the change is gone with no warning. Edit the templates.
+**The build checks them and refuses to continue on a divergence.** It compares every `data-key` message across both pages in all three languages, refuses a key defined twice, compares the greeting templates, and checks that every key `hello.js` or `form.js` asks for exists on both pages. Scripts name keys only as `show(slot, "key")`, `bank("key")`, or `fail(element, "key")`, so the build can find them. A mismatch fails the build with the specific keys named. This is not a style rule; it is the only thing standing between a one-sided edit and a blank error message in front of a room of students.
+
+`Stylesheet.html`, `Script.html`, `Form.html`, and `Hello.html` in that folder are **generated** from `templates/site.css` and `templates/site.js` on every build. Editing them does nothing: the next build overwrites the file and the change is gone with no warning. Edit the templates.
 
 ### Google Apps Script Fallback
 
@@ -666,7 +701,9 @@ The Apps Script web app is the backup for when Pages or DNS fails, and it must s
 **Check-in**
 
 - [ ] With the gate unpassed, the page source contains no ID field and no announcement
-- [ ] Crockford normalization works: `o`/`O` accept as `0`, `i`/`I`/`l`/`L` accept as `1`, and hyphens are ignored
+- [ ] Crockford normalization works: `o`/`O` accept as `0`, `i`/`I`/`l`/`L` accept as `1`, `U` is accepted, and hyphens are ignored
+- [ ] Every question type in `C1` renders with a visible label, works by keyboard, and writes to its column; a `data-only` question appears only for its IDs
+- [ ] A malformed tag in `C1` still renders and turns the cell red
 - [ ] Pasting a whole code or a whole 9-digit ID into any box fills the group
 - [ ] Backspace, arrow keys, and Enter behave in both groups
 - [ ] A saved ID prefills at step 2 and can be cleared in one click

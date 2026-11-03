@@ -5,8 +5,9 @@ Layout:
     content/      site.yml, home.yml, tryouts.md, resources.md
     assets/       photographs and the logo
     templates/    page templates, stylesheet, scripts
-    apps-script/  the fallback web app; Stylesheet.html and Script.html
-                  in there are GENERATED from templates/ by this script
+    apps-script/  the fallback web app; Stylesheet.html, Script.html,
+                  Form.html and Hello.html in there are GENERATED from
+                  templates/ by this script
 
 Run:  python build.py
 """
@@ -113,12 +114,18 @@ def picture(node: dict, eager: bool = False) -> Markup:
 
 # templates/hello.html and apps-script/MATHCOUNTS.html are two hand-written
 # copies of one screen, and they have drifted apart more than once: a string
-# edited in one file, a message added to the other, a script left calling a
-# key that no longer exists. The build refuses to ship a divergence rather
-# than letting it surface in front of a room of students.
+# edited in one file, a message added to the other, a merge that left a key
+# defined twice so the page showed the wrong error. The script itself is
+# shared now (hello.js and form.js become Hello.html and Form.html), but the
+# markup is still written twice. The build refuses to ship a divergence
+# rather than letting it surface in front of a room of students.
 
 _SPAN = re.compile(r'<span\b([^>]*\bdata-key="[^"]+"[^>]*)>([^<]*)</span>', re.S)
-_SHOW = re.compile(r'show\(\s*\w+\s*,\s*"([^"]+)"\s*\)')
+# Every message key a script uses is written as show(slot, "key"),
+# bank("key") or fail(element, "key"), so the build can find them all.
+_KEY_USE = re.compile(r'\b(?:show|bank|fail)\(\s*(?:[\w.]+\s*,\s*)?"([a-z][a-z-]*)"')
+_TEMPLATE = re.compile(r'data-template-(\w+)="([^"]*)"')
+SCRIPTS = ("hello.js", "form.js")
 
 
 def _attr(attrs: str, name: str) -> str:
@@ -126,14 +133,16 @@ def _attr(attrs: str, name: str) -> str:
     return found.group(1) if found else ""
 
 
-def _message_bank(text: str) -> dict:
-    bank = {}
+def _message_bank(text: str) -> tuple[dict, list]:
+    bank, duplicates = {}, []
     for match in _SPAN.finditer(text):
         attrs, english = match.group(1), " ".join(match.group(2).split())
-        bank[_attr(attrs, "data-key")] = (
-            english, _attr(attrs, "data-zh"), _attr(attrs, "data-ko")
-        )
-    return bank
+        key = _attr(attrs, "data-key")
+        if key in bank:
+            duplicates.append(key)
+            continue  # querySelector shows the first, so the first is compared
+        bank[key] = (english, _attr(attrs, "data-zh"), _attr(attrs, "data-ko"))
+    return bank, duplicates
 
 
 def check_checkin_parity() -> None:
@@ -141,10 +150,15 @@ def check_checkin_parity() -> None:
         "templates/hello.html": TEMPLATES / "hello.html",
         "apps-script/MATHCOUNTS.html": APPS_SCRIPT / "MATHCOUNTS.html",
     }
-    banks = {name: _message_bank(path.read_text(encoding="utf-8"))
-             for name, path in pages.items()}
+    texts = {name: path.read_text(encoding="utf-8") for name, path in pages.items()}
 
     problems = []
+    banks = {}
+    for name, text in texts.items():
+        banks[name], duplicates = _message_bank(text)
+        for key in duplicates:
+            problems.append(f"{name} defines {key!r} more than once; only the first is ever shown")
+
     names = list(banks)
     left, right = banks[names[0]], banks[names[1]]
 
@@ -162,13 +176,20 @@ def check_checkin_parity() -> None:
                     f"      {names[1]}: {right[key][index]}"
                 )
 
-    # A script asking for a key that no page defines shows an empty message.
-    for name, path in (("templates/hello.js", TEMPLATES / "hello.js"),
-                       ("apps-script/MATHCOUNTS.html", APPS_SCRIPT / "MATHCOUNTS.html")):
-        source = path.read_text(encoding="utf-8")
-        bank = banks["templates/hello.js" == name and "templates/hello.html" or name]
-        for key in sorted(set(_SHOW.findall(source)) - set(bank)):
-            problems.append(f"{name} shows {key!r}, which has no string to show")
+    greetings = {name: _TEMPLATE.findall(text) for name, text in texts.items()}
+    if greetings[names[0]] != greetings[names[1]]:
+        problems.append(
+            "the greeting templates differ:\n"
+            f"      {names[0]}: {greetings[names[0]]}\n"
+            f"      {names[1]}: {greetings[names[1]]}"
+        )
+
+    # A script asking for a key that a page does not define shows an empty message.
+    for script in SCRIPTS:
+        used = set(_KEY_USE.findall((TEMPLATES / script).read_text(encoding="utf-8")))
+        for name, bank in banks.items():
+            for key in sorted(used - set(bank)):
+                problems.append(f"templates/{script} shows {key!r}, which {name} does not define")
 
     if problems:
         raise SystemExit(
@@ -370,7 +391,7 @@ def main() -> int:
         print(f"  /{target}")
 
     # static assets
-    for name in ("site.css", "site.js", "hello.js"):
+    for name in ("site.css", "site.js", "form.js", "hello.js"):
         shutil.copy(TEMPLATES / name, OUT / name)
 
     svg = minify_svg()
@@ -408,12 +429,16 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    # The Apps Script fallback shares the stylesheet and the language switch
-    # with the site, pulled in with printing scriptlets so there is one copy
-    # of each. Both files are generated; edit templates/, never these.
+    # The Apps Script fallback shares the stylesheet, the language switch and
+    # the whole check-in script with the site, pulled in with printing
+    # scriptlets so there is one copy of each. These files are generated;
+    # edit templates/, never these.
+    print("apps script:")
     for target, source, wrapper in (
         ("Stylesheet.html", "site.css", "style"),
         ("Script.html", "site.js", "script"),
+        ("Form.html", "form.js", "script"),
+        ("Hello.html", "hello.js", "script"),
     ):
         (APPS_SCRIPT / target).write_text(
             f"<!-- GENERATED BY build.py FROM templates/{source} - DO NOT EDIT -->\n"
@@ -422,8 +447,7 @@ def main() -> int:
             + f"</{wrapper}>\n",
             encoding="utf-8",
         )
-        print(f"apps script:\n  {target} regenerated from templates/{source}"
-              if target == "Stylesheet.html" else f"  {target} regenerated from templates/{source}")
+        print(f"  {target} regenerated from templates/{source}")
 
     print(f"\ndone -> {OUT}")
     return 0

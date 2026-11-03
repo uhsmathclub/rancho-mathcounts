@@ -1,11 +1,18 @@
 /* Rancho MATHCOUNTS — student check-in.
    Step 1 is a gate: the student ID field does not exist until the day code
-   is accepted, so a wrong code learns nothing. All copy lives in #strings. */
+   is accepted, so a wrong code learns nothing. All copy lives in #strings.
+
+   One script for both front ends. The public page posts JSON to the Apps
+   Script endpoint; the Apps Script fallback calls the same handler over
+   google.script.run. build.py copies this file into apps-script/Hello.html,
+   so the two can no longer drift apart. Needs form.js loaded first. */
 (function () {
   "use strict";
 
   var ENDPOINT = window.MC_ENDPOINT || "";
-  var CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+  /* Crockford base-32, plus U: the generator never draws a U, but a coach
+     may write a themed code into the sheet by hand. */
+  var TYPABLE = "0123456789ABCDEFGHJKMNPQRSTUVWXYZ";
   var ID_KEY = "mc-student-id";
 
   var gate = document.getElementById("gate");
@@ -13,7 +20,8 @@
   var result = document.getElementById("result");
   var strings = document.getElementById("strings");
   var codeBoxes = [].slice.call(document.querySelectorAll("#code-boxes input"));
-  var idBoxes = [].slice.call(document.querySelectorAll("#id-boxes input"));
+  var idGroup = document.getElementById("id-boxes");
+  var idBoxes = [].slice.call(idGroup.querySelectorAll("input"));
 
   /* ---------- copy ---------- */
 
@@ -35,7 +43,7 @@
     ch = ch.toUpperCase();
     if (ch === "I" || ch === "L") return "1";
     if (ch === "O") return "0";
-    return CROCKFORD.indexOf(ch) > -1 ? ch : "";
+    return TYPABLE.indexOf(ch) > -1 ? ch : "";
   }
 
   function normalizeDigit(ch) {
@@ -91,10 +99,16 @@
 
   wire(codeBoxes, normalizeCode);
   wire(idBoxes, normalizeDigit);
+  codeBoxes[0].focus(); // the fallback's sandboxed frame ignores autofocus
 
   /* ---------- transport ---------- */
 
-  function post(payload) {
+  function api(payload) {
+    if (window.google && google.script && google.script.run) {
+      return new Promise(function (resolve, reject) {
+        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).api(payload);
+      });
+    }
     /* text/plain keeps this a simple request, so Apps Script never sees a
        CORS preflight it cannot answer. */
     return fetch(ENDPOINT, {
@@ -126,14 +140,14 @@
     clear(gateError);
     busy(gateSubmit, true);
 
-    post({ action: "gate", code: code }).then(function (data) {
+    api({ action: "gate", code: code }).then(function (data) {
       busy(gateSubmit, false);
       if (!data.ok) {
         show(gateError, "code-wrong");
         return;
       }
       dayCode = code;
-      openCheckin(data.announcement || "");
+      openCheckin(data.announcement || "", data.fields || []);
     }).catch(function () {
       busy(gateSubmit, false);
       show(gateError, "offline");
@@ -148,6 +162,7 @@
   var leaving = document.getElementById("leaving");
   var leavingTime = document.getElementById("leaving-time");
   var leavingWhen = document.getElementById("leaving-when");
+  var form = null; // the questions in today's announcement
 
   leaving.addEventListener("change", function () {
     leavingWhen.hidden = !leaving.checked;
@@ -160,27 +175,81 @@
     try { localStorage.removeItem(ID_KEY); } catch (e) {}
     fill(idBoxes, "", normalizeDigit);
     savedHint.hidden = true;
+    idChanged();
     idBoxes[0].focus();
   });
 
-  function openCheckin(announcementHtml) {
+  /* Questions with data-only appear once all nine digits are in, and only
+     for the IDs they name. The server decides; the page never holds the
+     list. One lookup per ID, however often it is retyped. */
+  var lookups = {};
+  var revealedFor = "";
+
+  function lookup(id) {
+    if (!form || !form.hasRestricted()) return Promise.resolve();
+    if (!lookups[id]) {
+      lookups[id] = api({ action: "fields", code: dayCode, id: id }).then(function (data) {
+        return data && data.ok ? data.fields || [] : [];
+      }, function () {
+        delete lookups[id]; // try again next time
+        return [];
+      });
+    }
+    return lookups[id].then(function (fields) {
+      if (readValue(idBoxes) !== id || revealedFor === id) return;
+      form.reveal(fields);
+      revealedFor = id;
+    });
+  }
+
+  function idChanged() {
+    if (!form || !form.hasRestricted()) return;
+    var id = readValue(idBoxes);
+    if (revealedFor && revealedFor !== id) {
+      form.hideRestricted();
+      revealedFor = "";
+    }
+    if (id.length === idBoxes.length) lookup(id);
+  }
+
+  ["input", "keydown", "paste"].forEach(function (type) {
+    idGroup.addEventListener(type, function () { setTimeout(idChanged, 0); });
+  });
+
+  function openCheckin(announcementHtml, fields) {
     gate.hidden = true;
     checkin.hidden = false;
 
     var slot = document.getElementById("day-announcement");
-    if (announcementHtml) {
-      slot.innerHTML = announcementHtml;
-      slot.hidden = false;
-    }
+    form = window.MCForm.render(slot, announcementHtml, fields);
+    slot.hidden = !announcementHtml;
 
     var saved = "";
     try { saved = localStorage.getItem(ID_KEY) || ""; } catch (e) {}
     if (saved) {
       fill(idBoxes, saved, normalizeDigit);
       savedHint.hidden = false;
+      idChanged();
     }
 
     document.getElementById("checkin-heading").focus();
+  }
+
+  /* Report the first unanswered or out-of-range question and go to it. */
+  function questionsOk() {
+    var problem = form.validate();
+    if (!problem) return true;
+    show(checkinError, problem.key);
+    problem.element.focus();
+    return false;
+  }
+
+  function serverError(error) {
+    if (error === "code") show(checkinError, "code-wrong");
+    else if (error === "id") show(checkinError, "id-unknown");
+    else if (error === "answers") show(checkinError, "answer-server");
+    else if (error === "busy") show(checkinError, "busy");
+    else show(checkinError, "offline");
   }
 
   checkin.addEventListener("submit", function (event) {
@@ -198,23 +267,34 @@
       return;
     }
 
+    if (!questionsOk()) return;
+
     show(checkinError, "loading");
     busy(checkinSubmit, true);
 
-    post({
-      action: "checkin",
-      code: dayCode,
-      id: id,
-      message: document.getElementById("message").value,
-      leaving: leaving.checked ? leavingTime.value : ""
-    }).then(function (data) {
-      busy(checkinSubmit, false);
-      if (!data.ok) {
-        show(checkinError, data.error === "code" ? "code-wrong" : "id-unknown");
+    // A data-only question may still be on its way for this ID; wait for
+    // it, and check again if it brought a question that needs an answer.
+    lookup(id).then(function () {
+      if (!questionsOk()) {
+        busy(checkinSubmit, false);
         return;
       }
-      try { localStorage.setItem(ID_KEY, id); } catch (e) {}
-      openResult(data.name || "", data.message || "");
+      return api({
+        action: "checkin",
+        code: dayCode,
+        id: id,
+        message: document.getElementById("message").value,
+        leaving: leaving.checked ? leavingTime.value : "",
+        answers: form.answers()
+      }).then(function (data) {
+        busy(checkinSubmit, false);
+        if (!data.ok) {
+          serverError(data.error);
+          return;
+        }
+        try { localStorage.setItem(ID_KEY, id); } catch (e) {}
+        openResult(data.name || "", data.message || "");
+      });
     }).catch(function () {
       busy(checkinSubmit, false);
       show(checkinError, "offline");
